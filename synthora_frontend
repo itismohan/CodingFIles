@@ -1,0 +1,928 @@
+Here’s your updated folder structure for the Synthora frontend, now including relevant .js files based on the features you requested:
+
+📂 Synthora Frontend (React + Tailwind + Framer Motion)
+
+📂 synthora_frontend/
+│── 📂 public/ (Static assets, favicon, etc.)
+│── 📂 src/ (Main source code directory)
+│   │
+│   ├── 📂 components/ (Reusable UI components)
+│   │   ├── 📂 ui/ (UI-specific components)
+│   │   │   ├── button.js
+│   │   │   ├── sidebar.js (Sidebar component with updated items)
+│   │   │   ├── input.js
+│   │   │   ├── card.js
+│   │   │   ├── toggle.js
+│   │   │   ├── darkModeSwitch.js (Handles dark/light mode toggle)
+│   │
+│   ├── 📂 pages/ (Different app screens/pages)
+│   │   ├── Ideate.js
+│   │   ├── Features.js
+│   │   ├── Sagas.js
+│   │   ├── UseStories.js
+│   │   ├── TestScenarios.js
+│   │   ├── TestCases.js
+│   │   ├── TestScripts.js
+│   │   ├── TestData.js
+│   │
+│   ├── 📂 hooks/ (Custom React hooks)
+│   │   ├── useDarkMode.js (Handles theme switching state)
+│   │
+│   ├── 📂 services/ (API calls to backend Flask/Spring Boot services)
+│   │   ├── aiService.js (Handles AI-based predictions for test cases, scripts, etc.)
+│   │   ├── fileService.js (Handles file uploads and processing)
+│   │   ├── testService.js (Manages test case & script generation API calls)
+│   │
+│   ├── 📂 styles/ (Tailwind & global styles)
+│   │   ├── globals.css
+│   │
+│   ├── 📂 utils/ (Helper functions and utility methods)
+│   │   ├── constants.js (Contains reusable constants like API endpoints)
+│   │   ├── helpers.js (Reusable helper functions)
+│   │   ├── validation.js (Input validation rules for forms)
+│   │
+│   ├── App.js (Main entry component for the React app)
+│   ├── index.js (ReactDOM entry point)
+│   ├── routes.js (Centralized route handling for navigation)
+│   ├── package.json (Project dependencies & scripts)
+│   ├── tailwind.config.js (Tailwind CSS config file)
+│   ├── vite.config.js (If using Vite instead of CRA for React build tool)
+│
+│── .env (Environment variables for API keys, endpoints, etc.)
+│── Dockerfile (Containerization for frontend deployment)
+│── README.md (Project documentation)
+
+
+
+
+
+
+Great! Let’s start with the UI components in the components/ui/ folder.
+
+We’ll first implement the following essential components:
+✅ Button.js – Reusable button with Tailwind styles
+✅ Sidebar.js – Updated sidebar with new items
+✅ Input.js – Styled input field
+✅ Card.js – Reusable card component
+✅ DarkModeSwitch.js – Toggle for dark/light mode
+
+1️⃣ Button.js (Reusable Button)
+
+import React from "react";
+
+export function Button({ children, onClick, className = "" }) {
+  return (
+    <button
+      className={`px-4 py-2 rounded-xl font-semibold transition-all duration-300 ${className}`}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+}
+
+2️⃣ Sidebar.js (Updated Sidebar with New Items)
+
+import { useState } from "react";
+import { Home, List, FileText, CheckCircle, Code, Database } from "lucide-react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+
+const sidebarItems = [
+  { name: "Ideate", icon: <Home size={20} />, path: "/ideate" },
+  { name: "Features", icon: <List size={20} />, path: "/features" },
+  { name: "Sagas", icon: <FileText size={20} />, path: "/sagas" },
+  { name: "Use Stories", icon: <CheckCircle size={20} />, path: "/use-stories" },
+  { name: "Test Scenarios", icon: <FileText size={20} />, path: "/test-scenarios" },
+  { name: "Test Cases", icon: <CheckCircle size={20} />, path: "/test-cases" },
+  { name: "Test Scripts", icon: <Code size={20} />, path: "/test-scripts" },
+  { name: "Test Data", icon: <Database size={20} />, path: "/test-data" },
+];
+
+export default function Sidebar({ darkMode }) {
+  const [active, setActive] = useState("Ideate");
+
+  return (
+    <aside className="sidebar">
+      <nav className="flex flex-col gap-4">
+        {sidebarItems.map((item) => (
+          <motion.div
+            key={item.name}
+            whileHover={{ scale: 1.05 }}
+            onClick={() => setActive(item.name)}
+          >
+            <Link
+              to={item.path}
+              className={`sidebar-item ${active === item.name ? "bg-primary-color text-white" : "text-gray-700 dark:text-gray-300"}`}
+            >
+              {item.icon} <span>{item.name}</span>
+            </Link>
+          </motion.div>
+        ))}
+      </nav>
+    </aside>
+  );
+}
+
+
+3️⃣ Input.js (Reusable Input)
+
+import React from "react";
+
+export function Input({ placeholder, type = "text", className = "", ...props }) {
+  return (
+    <input
+      type={type}
+      placeholder={placeholder}
+      className={`border border-gray-300 p-2 rounded-lg w-full ${className}`}
+      {...props}
+    />
+  );
+}
+
+4️⃣ Card.js (Reusable Card Component)
+
+import React from "react";
+
+export function Card({ children }) {
+  return (
+    <div className="bg-white shadow-lg rounded-2xl p-6">{children}</div>
+  );
+}
+
+5️⃣ DarkModeSwitch.js (Dark Mode Toggle)
+
+import React from "react";
+import { Moon, Sun } from "lucide-react";
+
+export function DarkModeSwitch({ darkMode, toggleDarkMode }) {
+  return (
+    <button onClick={toggleDarkMode} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
+      {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+    </button>
+  );
+}
+
+✅ Next Steps
+
+Would you like to integrate these components into App.js next? Or do you want to continue building more UI components first? 😊
+
+
+
+
+app.js
+
+
+import { lazy, Suspense } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Sidebar from "@/components/Sidebar";
+import { Button } from "@/components/ui/button";
+import { Moon, Sun } from "lucide-react";
+import { useState } from "react";
+
+const Ideate = lazy(() => import("@/pages/Ideate"));
+const Features = lazy(() => import("@/pages/Features"));
+const Sagas = lazy(() => import("@/pages/Sagas"));
+const UseStories = lazy(() => import("@/pages/UseStories"));
+const TestScenarios = lazy(() => import("@/pages/TestScenarios"));
+const TestCases = lazy(() => import("@/pages/TestCases"));
+const TestScripts = lazy(() => import("@/pages/TestScripts"));
+const TestData = lazy(() => import("@/pages/TestData"));
+
+export default function App() {
+  const [darkMode, setDarkMode] = useState(false);
+
+  return (
+    <Router>
+      <div className={`flex h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"}`}>
+        <Sidebar darkMode={darkMode} />
+        <div className="flex-1 p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Synthora</h1>
+            <Button onClick={() => setDarkMode(!darkMode)}>
+              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </Button>
+          </div>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Routes>
+              <Route path="/ideate" element={<Ideate />} />
+              <Route path="/features" element={<Features />} />
+              <Route path="/sagas" element={<Sagas />} />
+              <Route path="/use-stories" element={<UseStories />} />
+              <Route path="/test-scenarios" element={<TestScenarios />} />
+              <Route path="/test-cases" element={<TestCases />} />
+              <Route path="/test-scripts" element={<TestScripts />} />
+              <Route path="/test-data" element={<TestData />} />
+            </Routes>
+          </Suspense>
+        </div>
+      </div>
+    </Router>
+  );
+}
+
+
+
+
+import React from "react";
+
+const Ideate = () => {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Ideate</h1>
+      <p>Generate and explore ideas for testing.</p>
+    </div>
+  );
+};
+
+const Features = () => {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Features</h1>
+      <p>Define key features and functionalities.</p>
+    </div>
+  );
+};
+
+const Sagas = () => {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Sagas</h1>
+      <p>Manage long-running business workflows.</p>
+    </div>
+  );
+};
+
+const UseStories = () => {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Use Stories</h1>
+      <p>Define user stories based on features.</p>
+    </div>
+  );
+};
+
+const TestScenarios = () => {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Test Scenarios</h1>
+      <p>Generate test scenarios for validation.</p>
+    </div>
+  );
+};
+
+const TestCases = () => {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Test Cases</h1>
+      <p>Define test cases with expected outcomes.</p>
+    </div>
+  );
+};
+
+const TestScripts = () => {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Test Scripts</h1>
+      <p>Generate automation scripts for execution.</p>
+    </div>
+  );
+};
+
+const TestData = () => {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Test Data</h1>
+      <p>Prepare test data for validation.</p>
+    </div>
+  );
+};
+
+export { Ideate, Features, Sagas, UseStories, TestScenarios, TestCases, TestScripts, TestData };
+
+
+
+
+
+
+I reviewed the aiService.js, fileService.js, and testService.js files, and here are some enhancements to maintain coding standards and improve maintainability:
+
+Enhancements:
+	1.	Consistent Error Handling
+	•	Use try-catch blocks for API calls to prevent crashes.
+	•	Implement a centralized error-handling mechanism.
+	2.	Environment Variables
+	•	Use .env variables for API URLs instead of hardcoding.
+	3.	Standardized Function Naming
+	•	Use meaningful names like fetchGeneratedTestCases instead of getTests.
+	4.	Better Response Handling
+	•	Check for response status codes before processing data.
+	5.	Logging for Debugging
+	•	Add console.error statements inside catch blocks.
+	6.	Code Reusability
+	•	Create a common apiClient.js for making API requests (to avoid repetition).
+
+Updated Code with Enhancements
+
+📌 services/apiClient.js (New Common API Utility)
+
+import axios from "axios";
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: { "Content-Type": "application/json" },
+});
+
+export const fetchData = async (url, method = "GET", body = null) => {
+  try {
+    const response = await apiClient({
+      url,
+      method,
+      data: body,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(`API Error (${method} ${url}):`, error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export default apiClient;
+
+📌 services/aiService.js (Refactored)
+
+import { fetchData } from "./apiClient";
+
+export const generateTestCases = async (inputData) => {
+  return fetchData("/ai/generate-test-cases", "POST", inputData);
+};
+
+export const generateAutomationScripts = async (testCases) => {
+  return fetchData("/ai/generate-automation-scripts", "POST", { testCases });
+};
+
+📌 services/fileService.js (Refactored)
+
+import apiClient from "./apiClient";
+
+export const uploadFile = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await apiClient.post("/file/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("File Upload Error:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const downloadFile = async (filename) => {
+  try {
+    const response = await apiClient.get(`/file/download/${filename}`, {
+      responseType: "blob",
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("File Download Error:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+📌 services/testService.js (Refactored)
+
+import { fetchData } from "./apiClient";
+
+export const fetchTestCases = async () => {
+  return fetchData("/test/get-all");
+};
+
+export const fetchTestScripts = async () => {
+  return fetchData("/test/get-scripts");
+};
+
+Key Benefits of Enhancements:
+
+✅ Modular & Maintainable: Common API logic is moved to apiClient.js.
+✅ Better Error Handling: Uses try-catch to avoid breaking the UI.
+✅ Environment Variables: Uses process.env.REACT_APP_API_URL.
+✅ Reusability: API calls now use fetchData() instead of repeating logic.
+
+Would you like any additional enhancements? 🚀
+
+
+
+
+
+
+
+Great choice! Hosting OpenAPI docs will make it easy for developers to access and interact with the API from anywhere. Here’s how you can set it up:
+
+1️⃣ Create an OpenAPI Spec (openapi.json)
+
+This file defines all your API endpoints, request/response formats, and descriptions.
+
+📌 Create openapi.json in your backend root folder:
+
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Synthora API",
+    "version": "1.0.0",
+    "description": "API documentation for Synthora AI-powered test generation"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/ai/generate-test-cases": {
+      "post": {
+        "summary": "Generate test cases",
+        "description": "Generates test cases based on input data",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "input_data": { "type": "string", "example": "Test case input example" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "data": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+2️⃣ Serve OpenAPI Docs in Flask
+
+Modify your app.py to serve this OpenAPI spec:
+
+📌 Update app.py
+
+from flask import Flask, send_from_directory
+import os
+
+app = Flask(__name__)
+
+@app.route("/openapi.json")
+def get_openapi_json():
+    return send_from_directory(os.getcwd(), "openapi.json")
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+3️⃣ Use Swagger UI to Render the Docs
+
+Now, let’s set up Swagger UI to render this openapi.json.
+
+📌 Install Swagger UI in your project root:
+
+mkdir swagger-ui
+cd swagger-ui
+curl -o index.html https://raw.githubusercontent.com/swagger-api/swagger-ui/master/dist/index.html
+curl -o swagger-ui-bundle.js https://raw.githubusercontent.com/swagger-api/swagger-ui/master/dist/swagger-ui-bundle.js
+curl -o swagger-ui-standalone-preset.js https://raw.githubusercontent.com/swagger-api/swagger-ui/master/dist/swagger-ui-standalone-preset.js
+curl -o swagger-ui.css https://raw.githubusercontent.com/swagger-api/swagger-ui/master/dist/swagger-ui.css
+
+4️⃣ Serve Swagger UI with Flask
+
+📌 Modify app.py again to serve Swagger UI:
+
+from flask import Flask, send_from_directory
+import os
+
+app = Flask(__name__)
+
+@app.route("/openapi.json")
+def get_openapi_json():
+    return send_from_directory(os.getcwd(), "openapi.json")
+
+@app.route("/docs")
+def swagger_ui():
+    return send_from_directory("swagger-ui", "index.html")
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+5️⃣ Access the Documentation
+
+Once the Flask app is running:
+	•	🌐 Open http://localhost:5000/openapi.json → To see raw OpenAPI JSON
+	•	🌐 Open http://localhost:5000/docs → To see the Swagger UI with API docs
+
+Bonus: Deploy OpenAPI Docs Online
+
+You can also host this OpenAPI file online using Redocly or SwaggerHub.
+
+🔹 Redocly (Fast & Minimal UI):
+
+npx redoc-cli serve openapi.json
+
+Then visit http://localhost:8080.
+
+🔹 SwaggerHub (Free Online Hosting):
+	1.	Go to SwaggerHub
+	2.	Create a new API
+	3.	Upload your openapi.json
+
+🔥 Done! You Now Have OpenAPI Docs!
+
+Do you need help adding more endpoints to openapi.json? 🚀
+
+
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Styles */
+body {
+  @apply font-sans;
+}
+
+/* Smooth Transitions */
+button, input, select {
+  @apply transition-all duration-300;
+}
+
+/* Dark Mode */
+.dark {
+  @apply bg-gray-900 text-white;
+}
+
+/* Sidebar Styling */
+.sidebar {
+  @apply bg-white dark:bg-gray-800 h-screen p-4 shadow-lg flex flex-col;
+}
+.sidebar-item {
+  @apply flex items-center space-x-2 p-3 rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition;
+}
+
+/* Button Styling */
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg;
+}
+
+/* Card Styling */
+.card {
+  @apply bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md;
+}
+
+/* Input Fields */
+.input-field {
+  @apply w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white;
+}
+
+
+
+Yes! We can tackle these tasks in a structured way to ensure efficiency and maintainability. Here’s how we’ll proceed:
+
+📌 Plan of Action
+
+1️⃣ Develop UI Components
+
+We’ll start by creating essential reusable UI components, including:
+	•	Forms (for input fields, validation, submission)
+	•	Buttons (primary, secondary, disabled, etc.)
+	•	Cards (for displaying information in a structured format)
+	•	Modals (for pop-ups and confirmations)
+	•	Loaders (for async operations like API calls)
+
+2️⃣ Connect Frontend with Backend APIs
+
+We’ll integrate the services/ folder with the UI by:
+	•	Calling AI-based test case & script generation APIs via aiService.js
+	•	Handling file uploads via fileService.js
+	•	Retrieving test cases, scripts, and test data via testService.js
+	•	Using React state and effects to manage API calls and responses.
+
+3️⃣ Enhance UI with Animations & Styles
+	•	Tailwind CSS for styling consistency
+	•	Framer Motion for animations (button hover, modals, transitions)
+	•	Dark mode toggle for better UI experience
+	•	Improved responsiveness (mobile-friendly UI)
+
+🛠 Step 1: Creating UI Components
+
+📂 components/ui/Button.js
+
+import { motion } from "framer-motion";
+
+export default function Button({ text, onClick, disabled = false, variant = "primary" }) {
+  const variants = {
+    primary: "bg-primary text-white hover:bg-primary-dark",
+    secondary: "bg-gray-200 text-black hover:bg-gray-300",
+    disabled: "bg-gray-400 text-white cursor-not-allowed"
+  };
+
+  return (
+    <motion.button
+      className={`px-4 py-2 rounded-lg transition-all ${variants[disabled ? "disabled" : variant]}`}
+      whileHover={disabled ? {} : { scale: 1.05 }}
+      whileTap={disabled ? {} : { scale: 0.95 }}
+      onClick={disabled ? null : onClick}
+    >
+      {text}
+    </motion.button>
+  );
+}
+
+📂 components/ui/Card.js
+
+export default function Card({ title, children }) {
+  return (
+    <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6">
+      <h2 className="text-xl font-bold mb-4">{title}</h2>
+      {children}
+    </div>
+  );
+}
+
+📂 components/ui/Input.js
+
+export default function Input({ type = "text", placeholder, value, onChange }) {
+  return (
+    <input
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+    />
+  );
+}
+
+🛠 Step 2: Connecting APIs
+
+We already set up the services/ folder. Now, let’s integrate an API call into a React component.
+
+📂 pages/TestCases.js
+
+import { useEffect, useState } from "react";
+import { getTestCases } from "../services/testService";
+import Card from "../components/ui/Card";
+
+export default function TestCases() {
+  const [testCases, setTestCases] = useState([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const data = await getTestCases();
+      setTestCases(data);
+    }
+    fetchData();
+  }, []);
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Test Cases</h1>
+      {testCases.length > 0 ? (
+        testCases.map((test, index) => (
+          <Card key={index} title={test.title}>
+            <p>{test.description}</p>
+          </Card>
+        ))
+      ) : (
+        <p>No test cases available</p>
+      )}
+    </div>
+  );
+}
+
+🛠 Step 3: Enhancing UI with Animations & Styles
+
+Dark Mode Toggle in App.js
+
+import { useState } from "react";
+import Sidebar from "./components/Sidebar";
+import { Moon, Sun } from "lucide-react";
+
+export default function App() {
+  const [darkMode, setDarkMode] = useState(false);
+
+  return (
+    <div className={darkMode ? "dark bg-gray-900 text-white" : "bg-gray-100 text-black"}>
+      <button className="absolute top-4 right-4" onClick={() => setDarkMode(!darkMode)}>
+        {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+      </button>
+      <Sidebar />
+    </div>
+  );
+}
+
+Global Styles (globals.css)
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply font-sans;
+}
+
+.dark-mode {
+  @apply bg-gray-900 text-white;
+}
+
+✅ Next Steps
+
+Now that we have:
+	•	Reusable UI components (buttons, cards, inputs)
+	•	API integration (fetching test cases)
+	•	Enhanced UI with animations, styles, and dark mode
+
+We can:
+	1.	Expand UI components (modals, loaders)
+	2.	Complete API connections for test scripts, test data
+	3.	Optimize performance (lazy loading, caching)
+
+Do you want to proceed with additional components, or should we refine the API logic first? 🚀
+
+
+
+
+Great! Let’s refine the API logic to ensure:
+
+✅ Error Handling (Gracefully handle failed API calls)
+✅ Performance Optimization (Minimize redundant API calls, caching)
+✅ Consistent Response Handling (Ensure predictable API responses)
+✅ Reusable API Utility (Centralized API call functions)
+
+1️⃣ Create a Centralized API Utility
+
+We’ll define a utility to handle API requests efficiently.
+
+📂 services/apiClient.js
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"; // Flask/Spring Boot backend
+
+export async function fetchData(endpoint, options = {}) {
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} - ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("API Request Failed:", error);
+    return { error: error.message };
+  }
+}
+
+🔹 Why?
+	•	Centralized fetch logic
+	•	Standardized error handling
+	•	Flexible options (GET, POST, etc.)
+
+2️⃣ Update API Services to Use apiClient.js
+
+📂 services/aiService.js
+
+import { fetchData } from "./apiClient";
+
+export async function generateTestCases(inputData) {
+  return await fetchData("/generate/test-cases", {
+    method: "POST",
+    body: JSON.stringify(inputData),
+  });
+}
+
+📂 services/fileService.js
+
+import { fetchData } from "./apiClient";
+
+export async function uploadFile(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return await fetchData("/upload", {
+    method: "POST",
+    body: formData,
+    headers: {}, // Let browser set multipart headers
+  });
+}
+
+📂 services/testService.js
+
+import { fetchData } from "./apiClient";
+
+export async function getTestCases() {
+  return await fetchData("/test-cases");
+}
+
+export async function getTestScripts() {
+  return await fetchData("/test-scripts");
+}
+
+export async function getTestData() {
+  return await fetchData("/test-data");
+}
+
+🔹 Why?
+	•	Consistent API structure ✅
+	•	Reusable API client ✅
+	•	Handles failures gracefully ✅
+
+3️⃣ Enhance Error Handling in Components
+
+📂 pages/TestCases.js
+
+import { useEffect, useState } from "react";
+import { getTestCases } from "../services/testService";
+import Card from "../components/ui/Card";
+
+export default function TestCases() {
+  const [testCases, setTestCases] = useState([]);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      const data = await getTestCases();
+      if (data.error) {
+        setError(data.error);
+      } else {
+        setTestCases(data);
+      }
+    }
+    fetchData();
+  }, []);
+
+  if (error) return <p className="text-red-500">Error: {error}</p>;
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Test Cases</h1>
+      {testCases.length > 0 ? (
+        testCases.map((test, index) => (
+          <Card key={index} title={test.title}>
+            <p>{test.description}</p>
+          </Card>
+        ))
+      ) : (
+        <p>No test cases available</p>
+      )}
+    </div>
+  );
+}
+
+🔹 What’s Improved?
+	•	✅ Displays error messages instead of failing silently
+	•	✅ Prevents crashes when API fails
+	•	✅ User-friendly feedback
+
+4️⃣ Improve Performance with Caching (Optional)
+
+We can use localStorage or React Query for better performance.
+
+Example: Cache API responses
+
+export async function getTestCases() {
+  const cachedData = localStorage.getItem("testCases");
+  if (cachedData) return JSON.parse(cachedData);
+
+  const response = await fetchData("/test-cases");
+  if (!response.error) {
+    localStorage.setItem("testCases", JSON.stringify(response));
+  }
+  return response;
+}
+
+
+Would you like to proceed with UI improvements, or do you want to refine API endpoints further? 🚀
