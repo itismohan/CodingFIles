@@ -1,0 +1,241 @@
+DashBoard
+
+import React, { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { BarChart, PieChart } from "recharts";
+import Table from "../components/ui/Table";
+import api from "../services/aiService";
+
+const Dashboard = () => {
+  const [stats, setStats] = useState({
+    tokensUsed: {},
+    costs: {},
+    counts: {},
+    recentGenerations: [],
+  });
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await api.get("/dashboard-stats");
+        setStats(response.data);
+      } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const pieData = Object.keys(stats.tokensUsed).map((key) => ({
+    name: key,
+    value: stats.tokensUsed[key],
+  }));
+
+  const barData = Object.keys(stats.counts).map((key) => ({
+    name: key,
+    value: stats.counts[key],
+  }));
+
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Dashboard Overview</h2>
+      <div className="grid grid-cols-3 gap-4">
+        {Object.keys(stats.counts).map((key) => (
+          <Card key={key} className="shadow-lg">
+            <CardContent>
+              <h3 className="text-lg font-semibold">{key}</h3>
+              <p className="text-xl">{stats.counts[key]}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mt-6">
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-lg font-semibold">Token Usage</h3>
+          <PieChart data={pieData} />
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-lg font-semibold">Generated Items</h3>
+          <BarChart data={barData} />
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold">Recent Generations</h3>
+        <Table
+          columns={["Type", "Name", "Date"]}
+          data={stats.recentGenerations}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
+
+
+
+
+dashboard_controller
+
+from flask import Blueprint, jsonify
+
+# Define the blueprint
+dashboard_bp = Blueprint('dashboard', __name__)
+
+@dashboard_bp.route('/api/dashboard-stats', methods=['GET'])
+def get_dashboard_stats():
+    try:
+        # Sample data (Replace with actual database queries)
+        stats = {
+            "tokens_utilized": 50000,
+            "cost_per_llm": {
+                "GPT-4": 20.5,
+                "Claude": 15.8,
+                "Gemini": 18.2
+            },
+            "generated_counts": {
+                "features": 120,
+                "test_cases": 300,
+                "test_scenarios": 150,
+                "test_scripts": 80,
+                "ideas": 50,
+                "epics": 40
+            }
+        }
+        return jsonify({"success": True, "data": stats}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+DashboardPage
+
+
+import { useEffect, useState } from "react";
+import { fetchDashboardStats } from "@/services/dashboardService";
+import Loader from "@/components/ui/loader";
+import { Card, CardContent } from "@/components/ui/card";
+import { Table } from "@/components/ui/table";
+
+export default function Dashboard() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function getStats() {
+      try {
+        const data = await fetchDashboardStats();
+        setStats(data);
+      } catch (err) {
+        setError("Failed to load dashboard stats");
+      } finally {
+        setLoading(false);
+      }
+    }
+    getStats();
+  }, []);
+
+  if (loading) return <Loader />;
+  if (error) return <p className="text-red-500">{error}</p>;
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Dashboard Overview</h1>
+      <div className="grid grid-cols-3 gap-4">
+        <Card>
+          <CardContent>
+            <h2 className="text-lg font-semibold">Tokens Utilized</h2>
+            <p className="text-xl font-bold">{stats.tokens}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <h2 className="text-lg font-semibold">Total Cost</h2>
+            <p className="text-xl font-bold">${stats.totalCost.toFixed(2)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <h2 className="text-lg font-semibold">Features Generated</h2>
+            <p className="text-xl font-bold">{stats.features}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <h2 className="text-xl font-semibold mt-6 mb-4">Details</h2>
+      <Table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Test Cases</td>
+            <td>{stats.testCases}</td>
+          </tr>
+          <tr>
+            <td>Test Scenarios</td>
+            <td>{stats.testScenarios}</td>
+          </tr>
+          <tr>
+            <td>Test Scripts</td>
+            <td>{stats.testScripts}</td>
+          </tr>
+          <tr>
+            <td>Ideas</td>
+            <td>{stats.ideas}</td>
+          </tr>
+          <tr>
+            <td>Epics</td>
+            <td>{stats.epics}</td>
+          </tr>
+        </tbody>
+      </Table>
+    </div>
+  );
+}
+
+
+dashboard_service
+
+from app.utils.db import get_database
+from app.utils.cost_calculator import calculate_llm_cost
+
+def get_dashboard_stats():
+    db = get_database()
+    
+    # Fetch counts of generated items
+    ideas_count = db.ideas.count_documents({})
+    features_count = db.features.count_documents({})
+    epics_count = db.epics.count_documents({})
+    test_cases_count = db.test_cases.count_documents({})
+    test_scenarios_count = db.test_scenarios.count_documents({})
+    test_scripts_count = db.test_scripts.count_documents({})
+    
+    # Fetch token usage stats
+    token_usage = list(db.token_logs.aggregate([
+        {"$group": {"_id": "$model", "total_tokens": {"$sum": "$tokens"}}}
+    ]))
+    
+    # Calculate cost per LLM
+    llm_costs = {entry["_id"]: calculate_llm_cost(entry["_id"], entry["total_tokens"]) for entry in token_usage}
+    
+    return {
+        "generated": {
+            "ideas": ideas_count,
+            "features": features_count,
+            "epics": epics_count,
+            "test_cases": test_cases_count,
+            "test_scenarios": test_scenarios_count,
+            "test_scripts": test_scripts_count
+        },
+        "llm_usage": {
+            "tokens": token_usage,
+            "costs": llm_costs
+        }
+    }
