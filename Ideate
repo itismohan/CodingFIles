@@ -1,0 +1,617 @@
+Ideate
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader } from "@/components/ui/loader";
+import aiService from "@/services/aiService";
+
+export function Ideate() {
+  const [inputText, setInputText] = useState("");
+  const [generatedIdeas, setGeneratedIdeas] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const generateIdeas = async () => {
+    setLoading(true);
+    try {
+      const response = await aiService.generateIdeas(inputText);
+      setGeneratedIdeas(response.data.ideas);
+    } catch (error) {
+      console.error("Error generating ideas:", error);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">AI-Powered Ideation</h1>
+      <Card>
+        <CardContent className="p-4">
+          <Input
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="Enter idea seed..."
+            className="mb-4"
+          />
+          <Button onClick={generateIdeas} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+            Generate Ideas
+          </Button>
+          {loading && <Loader className="mt-4" />}
+          <ul className="mt-4">
+            {generatedIdeas.map((idea, index) => (
+              <li key={index} className="p-2 border-b border-gray-300">{idea}</li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+
+Features
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import axios from "axios";
+
+export default function Features() {
+  const [inputText, setInputText] = useState("");
+  const [generatedFeatures, setGeneratedFeatures] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerate = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post("/api/generate-features", { input: inputText });
+      setGeneratedFeatures(response.data.features);
+    } catch (error) {
+      console.error("Error generating features:", error);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Feature Generation</h1>
+      <Card>
+        <CardContent className="p-6">
+          <Input
+            placeholder="Enter feature description"
+            className="mb-4"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+          />
+          <motion.div whileHover={{ scale: 1.05 }}>
+            <Button onClick={handleGenerate} disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl">
+              {loading ? "Generating..." : "Generate Features"}
+            </Button>
+          </motion.div>
+        </CardContent>
+      </Card>
+      <div className="mt-6">
+        <h2 className="text-xl font-semibold mb-2">Generated Features</h2>
+        <ul className="list-disc pl-5">
+          {generatedFeatures.length > 0 ? (
+            generatedFeatures.map((feature, index) => <li key={index}>{feature}</li>)
+          ) : (
+            <p>No features generated yet.</p>
+          )}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+
+Sagas
+
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
+import axios from "axios";
+
+export default function Sagas() {
+  const [inputValue, setInputValue] = useState("");
+  const [generatedSagas, setGeneratedSagas] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerateSagas = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post("/api/generate-sagas", { prompt: inputValue });
+      setGeneratedSagas(response.data);
+    } catch (error) {
+      console.error("Error generating sagas:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Generate Sagas</h1>
+      <Card>
+        <CardContent className="p-6">
+          <Input 
+            placeholder="Enter prompt for saga generation" 
+            value={inputValue} 
+            onChange={(e) => setInputValue(e.target.value)} 
+            className="mb-4"
+          />
+          <motion.div whileHover={{ scale: 1.05 }}>
+            <Button 
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl"
+              onClick={handleGenerateSagas}
+              disabled={loading}
+            >
+              {loading ? "Generating..." : "Generate Sagas"}
+            </Button>
+          </motion.div>
+        </CardContent>
+      </Card>
+      {generatedSagas && (
+        <div className="mt-6 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+          <h2 className="text-lg font-semibold">Generated Sagas:</h2>
+          <pre className="whitespace-pre-wrap mt-2">{JSON.stringify(generatedSagas, null, 2)}</pre>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+Test Data
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Table, Thead, Tbody, Tr, Th, Td } from "@/components/ui/table";
+import { Loader } from "@/components/ui/loader";
+import axios from "axios";
+
+export default function TestData() {
+  const [testData, setTestData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchTestData();
+  }, []);
+
+  const fetchTestData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get("/api/generate-test-data");
+      setTestData(response.data);
+    } catch (err) {
+      console.error("Error fetching test data:", err);
+      setError("Failed to load test data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Test Data</h1>
+      <Card>
+        <CardContent className="p-6">
+          {loading ? (
+            <Loader />
+          ) : error ? (
+            <p className="text-red-500">{error}</p>
+          ) : (
+            <Table>
+              <Thead>
+                <Tr>
+                  <Th>ID</Th>
+                  <Th>Name</Th>
+                  <Th>Value</Th>
+                  <Th>Type</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {testData.map((data, index) => (
+                  <Tr key={index}>
+                    <Td>{data.id}</Td>
+                    <Td>{data.name}</Td>
+                    <Td>{data.value}</Td>
+                    <Td>{data.type}</Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          )}
+          <Button className="mt-4" onClick={fetchTestData}>
+            Regenerate Test Data
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+
+
+Scenarios
+
+
+import { useState, useEffect } from "react";
+import { fetchTestScenarios } from "@/services/testService";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Table, TableHead, TableRow, TableHeader, TableBody, TableCell } from "@/components/ui/table";
+
+export default function TestScenarios() {
+  const [testScenarios, setTestScenarios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function loadTestScenarios() {
+      try {
+        const data = await fetchTestScenarios();
+        setTestScenarios(data);
+      } catch (err) {
+        setError("Failed to load test scenarios");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadTestScenarios();
+  }, []);
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Test Scenarios</h1>
+      <Card>
+        <CardContent>
+          {loading ? (
+            <p>Loading...</p>
+          ) : error ? (
+            <p className="text-red-500">{error}</p>
+          ) : (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeader>ID</TableHeader>
+                  <TableHeader>Scenario</TableHeader>
+                  <TableHeader>Status</TableHeader>
+                  <TableHeader>Actions</TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {testScenarios.map((scenario) => (
+                  <TableRow key={scenario.id}>
+                    <TableCell>{scenario.id}</TableCell>
+                    <TableCell>{scenario.description}</TableCell>
+                    <TableCell>{scenario.status}</TableCell>
+                    <TableCell>
+                      <Button variant="outline">View</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+
+TestScripts
+
+
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
+import { motion } from "framer-motion";
+import { toast } from "react-hot-toast";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { dracula, coy } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { Copy, Check, Download } from "lucide-react";
+
+const languages = ["Java", "Python", "Ruby", "JavaScript", "TypeScript", "C#"];
+
+export default function TestScripts() {
+  const [selectedLanguage, setSelectedLanguage] = useState("Java");
+  const [script, setScript] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    fetchScript(selectedLanguage);
+  }, [selectedLanguage]);
+
+  const fetchScript = async (language) => {
+    setLoading(true);
+    setError(null);
+    setScript("");
+    try {
+      // Placeholder API call
+      const response = await fetch(`/api/generate-script?language=${language}`);
+      if (!response.ok) throw new Error("Failed to fetch script");
+      const data = await response.json();
+      setScript(data.script || "// AI-generated script will appear here");
+    } catch (err) {
+      setError("Error loading script. Please try again.");
+      toast.error("Failed to load script");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(script);
+    setCopied(true);
+    toast.success("Copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownload = () => {
+    const blob = new Blob([script], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${selectedLanguage}_script.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Test Script Generation</h1>
+      <Select
+        value={selectedLanguage}
+        onChange={(e) => setSelectedLanguage(e.target.value)}
+        className="mb-4"
+      >
+        {languages.map((lang) => (
+          <option key={lang} value={lang}>{lang}</option>
+        ))}
+      </Select>
+      
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        {loading ? (
+          <p className="text-gray-500">Loading script...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : (
+          <SyntaxHighlighter language={selectedLanguage.toLowerCase()} style={dracula} className="rounded-lg p-4">
+            {script}
+          </SyntaxHighlighter>
+        )}
+      </motion.div>
+
+      <div className="flex gap-4 mt-4">
+        <Button onClick={handleCopy} disabled={!script}>
+          {copied ? <Check size={20} /> : <Copy size={20} />} Copy
+        </Button>
+        <Button onClick={handleDownload} disabled={!script}>
+          <Download size={20} /> Download
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+
+UserStories
+
+import { useState } from "react";
+import { useSpring, animated } from "@react-spring/web";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Table, TableHead, TableRow, TableHeader, TableBody, TableCell } from "@/components/ui/table";
+import { Copy, Download, Loader } from "lucide-react";
+import { fetchAIUserStory } from "@/services/aiService";
+
+export default function UserStories() {
+  const [stories, setStories] = useState([]);
+  const [newStory, setNewStory] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Animation for stories
+  const fadeIn = useSpring({
+    opacity: 1,
+    transform: "translateY(0px)",
+    from: { opacity: 0, transform: "translateY(-10px)" },
+  });
+
+  // Add user story manually
+  const addStory = () => {
+    if (newStory.trim() === "") {
+      setError("User story cannot be empty!");
+      return;
+    }
+    setStories([...stories, newStory]);
+    setNewStory("");
+    setError("");
+  };
+
+  // Generate user story using AI (Placeholder function)
+  const generateAIStory = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const generatedStory = await fetchAIUserStory(); // AI API Call
+      setStories([...stories, generatedStory]);
+    } catch (err) {
+      setError("Failed to generate AI story. Please try again.");
+    }
+    setLoading(false);
+  };
+
+  // Copy to clipboard
+  const copyStories = () => {
+    const text = stories.join("\n");
+    navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!"));
+  };
+
+  // Download as text file
+  const downloadStories = () => {
+    const blob = new Blob([stories.join("\n")], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "user_stories.txt";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">User Stories</h1>
+
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <Input
+            placeholder="Enter a user story..."
+            value={newStory}
+            onChange={(e) => setNewStory(e.target.value)}
+            className="mb-4"
+          />
+          <div className="flex gap-2">
+            <Button onClick={addStory} className="flex-1">Add Story</Button>
+            <Button onClick={generateAIStory} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
+              {loading ? <Loader className="animate-spin" size={18} /> : "Generate AI Story"}
+            </Button>
+          </div>
+          {error && <p className="text-red-500 mt-2">{error}</p>}
+        </CardContent>
+      </Card>
+
+      {/* Table for displaying stories */}
+      {stories.length > 0 && (
+        <Card>
+          <CardContent>
+            <div className="flex justify-end gap-2 mb-4">
+              <Button onClick={copyStories} variant="outline">
+                <Copy size={18} className="mr-2" /> Copy
+              </Button>
+              <Button onClick={downloadStories} variant="outline">
+                <Download size={18} className="mr-2" /> Download
+              </Button>
+            </div>
+
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeader>#</TableHeader>
+                  <TableHeader>User Story</TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {stories.map((story, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>
+                      <animated.div style={fadeIn}>{story}</animated.div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+
+
+
+
+As a Solution Architect, my approach to enhancing Synthora would focus on scalability, performance, security, and maintainability while ensuring a seamless developer experience. Here’s what I’d improve:
+
+1️⃣ Architectural Enhancements
+
+✅ Microservices-Based Backend
+  • Instead of a monolithic Flask/Spring Boot backend, split services based on functionalities like AI processing, automation, file handling, and authentication.
+  • Use FastAPI (Python) for AI-related tasks and Spring Boot (Java) for business logic and automation APIs.
+  • Deploy each service as a containerized microservice using Docker & Kubernetes.
+
+✅ Event-Driven Architecture
+  • Introduce message queues (Kafka or RabbitMQ) for handling:
+  • AI requests asynchronously
+  • Test script generation in the background
+  • Large file processing without blocking API calls
+
+2️⃣ Database & Caching
+
+✅ Multi-Database Strategy
+  • MongoDB for AI-related dynamic content (Test Scenarios, Test Cases, etc.).
+  • PostgreSQL for structured data (Users, RBAC, Metadata).
+  • Redis for caching AI-generated responses to improve speed.
+
+3️⃣ AI & LLM Enhancements
+
+✅ Hybrid LLM Approach
+  • Use GPT-4 for ideation & storytelling (User Stories, Epics, Scenarios).
+  • Use Mistral or Llama 3 for test script generation (cheaper & faster for specific use cases).
+  • Fine-tune a custom model for automation script generation.
+
+✅ Integrate Vector Search (Pinecone/FAISS)
+  • Store test cases & automation scripts in a vector database for better retrieval and semantic search.
+
+4️⃣ Frontend Enhancements
+
+✅ Component-Based UI Design
+  • Convert UI into fully reusable components in React:
+  • DataTable.js → Used for Test Data, Test Cases, and Scripts
+  • AIResponseCard.js → Used for AI-generated outputs
+  • FileUploader.js → Used for test data, wireframes, etc.
+
+✅ SSR & Lazy Loading
+  • Next.js for better SEO and Server-Side Rendering (SSR).
+  • React Query to cache API calls & improve performance.
+  • Use React Spring for smoother animations (already started).
+
+5️⃣ Security & Authentication
+
+✅ Role-Based Access Control (RBAC)
+  • Extend the existing RBAC system with OAuth 2.0 & JWT authentication.
+  • Add multi-factor authentication (MFA) for secure logins.
+  • Implement API rate limiting to prevent abuse.
+
+✅ Secure File Uploads
+  • Sanitize all file uploads & scan for malicious files before processing.
+  • Store files in AWS S3 / Google Cloud Storage, not locally.
+
+6️⃣ CI/CD & DevOps Enhancements
+
+✅ Automated Deployment
+  • Use GitHub Actions to automate builds, tests, and deployments.
+  • Deploy with Docker + Kubernetes on AWS/GCP.
+
+✅ Performance Monitoring & Logging
+  • Use ELK Stack (Elasticsearch, Logstash, Kibana) for logging & monitoring.
+  • Implement Prometheus + Grafana for real-time API monitoring.
+
+🚀 Final Impact
+
+These upgrades will make Synthora:
+✅ Faster (Optimized queries, caching, and async processing)
+✅ More Scalable (Microservices, event-driven architecture)
+✅ More Secure (RBAC, OAuth, API rate limiting, secure file handling)
+✅ Cost-Effective (Hybrid AI approach, optimized cloud infra)
+
+🔥 Would you like to start implementing any of these improvements?
+
+We can begin with modularizing APIs, adding message queues, or refining AI-generated content. Let me know! 🚀
