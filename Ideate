@@ -614,4 +614,119 @@ These upgrades will make Synthora:
 
 🔥 Would you like to start implementing any of these improvements?
 
+
+Here are the implementations for the requested files:
+
+📂 src/components/ui/Table.js
+
+A responsive and reusable table component.
+
+import React from "react";
+
+const Table = ({ columns, data }) => {
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
+        <thead className="bg-gray-100">
+          <tr>
+            {columns.map((col, index) => (
+              <th
+                key={index}
+                className="px-4 py-2 text-left text-gray-700 font-semibold border-b"
+              >
+                {col}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.length > 0 ? (
+            data.map((row, rowIndex) => (
+              <tr
+                key={rowIndex}
+                className="hover:bg-gray-50 transition duration-150"
+              >
+                {Object.values(row).map((cell, cellIndex) => (
+                  <td
+                    key={cellIndex}
+                    className="px-4 py-2 border-b text-gray-600"
+                  >
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={columns.length} className="text-center py-4 text-gray-500">
+                No data available
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default Table;
+
+📂 src/components/ui/Toggle.js
+
+A toggle switch component to handle dark mode or other boolean settings.
+
+import React from "react";
+
+const Toggle = ({ enabled, setEnabled }) => {
+  return (
+    <button
+      onClick={() => setEnabled(!enabled)}
+      className={`relative w-12 h-6 rounded-full transition duration-300 ${
+        enabled ? "bg-blue-600" : "bg-gray-300"
+      }`}
+    >
+      <span
+        className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${
+          enabled ? "translate-x-6" : "translate-x-0"
+        }`}
+      />
+    </button>
+  );
+};
+
+export default Toggle;
+
+📂 src/hooks/useDarkMode.js
+
+A custom hook to manage dark mode preference.
+
+import { useState, useEffect } from "react";
+
+const useDarkMode = () => {
+  const [darkMode, setDarkMode] = useState(
+    () => localStorage.getItem("darkMode") === "true"
+  );
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("darkMode", darkMode);
+  }, [darkMode]);
+
+  return [darkMode, setDarkMode];
+};
+
+export default useDarkMode;
+
+💡 Key Features:
+
+✅ Table: Dynamic & responsive table with hover effects
+✅ Toggle: Smooth animated switch
+✅ Dark Mode Hook: Persists user preference with localStorage
+
+Would you like any further enhancements? 🚀
+
 We can begin with modularizing APIs, adding message queues, or refining AI-generated content. Let me know! 🚀
