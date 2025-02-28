@@ -1,0 +1,865 @@
+Here’s the updated folder structure for Synthora, following proper package naming conventions:
+
+📂 Project Root (synthora)
+
+synthora/
+│── backend/               # Flask Backend
+│── frontend/              # React Frontend
+│── docs/                  # Documentation
+│── .gitignore             # Git Ignore
+│── docker-compose.yml     # Docker Compose for Frontend & Backend
+│── README.md              # Project Overview
+
+📂 Backend (Flask + Python)
+
+synthora_backend/
+│── app/
+│   ├── controllers/         # API endpoints (Previously "routes/")
+│   │   ├── ai_generate.py   # AI-driven brainstorming API
+│   │   ├── file_upload.py   # File upload API (To be implemented)
+│   │   ├── automation.py    # Test automation API (To be implemented)
+│   ├── services/            # AI & file processing logic
+│   │   ├── ai_service.py    # AI processing logic (Implemented)
+│   │   ├── file_service.py  # File handling logic (To be implemented)
+│   │   ├── script_service.py# Automation script generation logic (To be implemented)
+│   ├── scripts/             # Automation script generation storage
+│   ├── utils/               # Helper functions
+│   ├── config.py            # App configuration & environment loading
+│   ├── app.py               # Flask entry point (Implemented)
+│── .env                     # API keys & config variables
+│── requirements.txt         # Python dependencies
+│── Dockerfile               # Containerization config
+│── README.md                # Documentation
+
+📂 Frontend (React + TypeScript)
+
+synthora-frontend/
+│── public/                # Static Assets
+│── src/
+│   │── components/        # Reusable UI Components
+│   │   ├── Navbar.tsx
+│   │   ├── Sidebar.tsx
+│   │── pages/             # Main Pages
+│   │   ├── Ideation.tsx
+│   │   ├── Wireframe.tsx
+│   │   ├── Epics.tsx
+│   │   ├── Features.tsx
+│   │   ├── TestCases.tsx
+│   │   ├── Automation.tsx
+│   │── services/          # API Calls to Flask Backend
+│   │   ├── ideationService.ts
+│   │   ├── figmaService.ts
+│   │   ├── testService.ts
+│   │── hooks/             # Custom React Hooks
+│   │── utils/             # Utility Functions
+│   │── styles/            # Tailwind/CSS Styles
+│   │── App.tsx            # Main App Component
+│── package.json           # React Dependencies
+│── Dockerfile             # Frontend Containerization
+
+📂 Deployment (Docker)
+
+docker-compose.yml       # Manages backend & frontend containers
+
+✅ Package Naming Conventions Followed:
+	•	synthora-backend/ → Python package: synthora
+	•	synthora-frontend/ → React package: synthora
+	•	synthora/api/ → API module
+	•	synthora/models/ → Database models
+	•	synthora/utils/ → Helper functions
+	•	__init__.py → Makes synthora a proper Python package
+
+🚀 Next Steps
+	1.	Initialize Python Package (pip install -e . inside synthora-backend/)
+	2.	Set Up Flask APIs (synthora.api)
+	3.	Develop React UI (synthora-frontend/src/pages)
+	4.	Write docker-compose.yml → Define backend, frontend services
+	5.	Run Docker → docker-compose up -d
+
+This structure keeps everything modular and well-organized. Let me know if you need any refinements! 🚀🔥
+
+
+
+
+
+app.py
+
+from flask import Flask, jsonify
+from flask_cors import CORS
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
+
+# Initialize Flask app
+app = Flask(__name__)
+CORS(app)  # Enable CORS for frontend-backend communication
+
+# Load configuration from environment variables
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
+
+# Register controllers (Updated from routes to controllers)
+from app.controllers.ai_generate import ai_generate_bp
+from app.controllers.file_upload import file_upload_bp
+from app.controllers.automation import automation_bp
+
+app.register_blueprint(ai_generate_bp, url_prefix='/api/ai')
+app.register_blueprint(file_upload_bp, url_prefix='/api/file')
+app.register_blueprint(automation_bp, url_prefix='/api/automation')
+
+# Default route
+@app.route('/')
+def home():
+    return {"message": "Synthora Backend Running!"}, 200
+
+# Health check route
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "healthy", "message": "Backend is running smoothly!"}), 200
+
+# Run the Flask app
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
+
+
+
+
+Docker
+
+# Use official Python image
+FROM python:3.10-slim
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy required files to the container
+COPY requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code
+COPY . .
+
+# Expose the port Flask runs on
+EXPOSE 5000
+
+# Set environment variables (Ensure the .env file is properly loaded in production)
+ENV PYTHONUNBUFFERED=1
+
+# Command to run the application
+CMD ["python", "app.py"]
+
+
+.docker ignore
+
+
+# Ignore Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore environment files
+.env
+venv/
+
+# Ignore dependencies
+*.log
+
+# Ignore system files
+.DS_Store
+
+# Ignore IDE configurations
+.vscode/
+.idea/
+
+# Ignore Docker build files
+docker-compose.yml
+
+
+
+
+docker-compose.yml
+
+version: '3.8'
+
+services:
+  backend:
+    container_name: synthora-backend
+    build: ./synthora-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./synthora-backend/.env
+    volumes:
+      - ./synthora-backend:/app
+    restart: always
+
+  frontend:
+    container_name: synthora-frontend
+    build: ./synthora-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./synthora-frontend:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
+    restart: always
+
+FileUpload
+
+ import os
+from flask import Blueprint, request, jsonify
+from werkzeug.utils import secure_filename
+from app.services.file_service import process_uploaded_file
+
+file_upload_bp = Blueprint('file_upload', __name__)
+
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+@file_upload_bp.route('/upload', methods=['POST'])
+def upload_file():
+    """Handles file uploads and processes them."""
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+    
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(filepath)
+    
+    # Process the uploaded file
+    process_result = process_uploaded_file(filepath)
+    
+    return jsonify({"message": "File uploaded successfully", "result": process_result}), 200
+
+
+
+
+ ai-service.py
+
+
+import openai
+import logging
+import os
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+class AIService:
+    """
+    Handles AI-driven functionalities using GPT-4, including ideation, wireframe prediction,
+    epic generation, feature forecasting, test case generation, test data prediction,
+    and UI test automation script generation.
+    """
+    def __init__(self):
+        self.api_key = os.getenv("OPENAI_API_KEY")
+        if not self.api_key:
+            logging.error("OpenAI API key is missing. Set OPENAI_API_KEY in the environment.")
+        openai.api_key = self.api_key
+
+    def call_gpt4(self, prompt):
+        """Calls OpenAI's GPT-4 API with the given prompt and returns the response."""
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[{"role": "system", "content": "You are an AI assistant helping with software development."},
+                          {"role": "user", "content": prompt}],
+                temperature=0.7
+            )
+            return response['choices'][0]['message']['content'].strip()
+        except Exception as e:
+            logging.error(f"Error calling GPT-4 API: {str(e)}")
+            return None
+
+    def generate_ideation(self, topic):
+        """Generates brainstorming ideas based on a given topic."""
+        prompt = f"Generate innovative ideas related to {topic}. Provide multiple suggestions."
+        return self.call_gpt4(prompt)
+
+    def predict_wireframe(self, description):
+        """Predicts a wireframe layout based on a given description."""
+        prompt = f"Based on the following UI description, suggest an appropriate wireframe structure: {description}"
+        return self.call_gpt4(prompt)
+
+    def predict_epics(self, content):
+        """Predicts epics based on the given wireframe or content."""
+        prompt = f"Extract epics from the following content:
+        {content}
+        Provide a list of epics with clear descriptions."
+        return self.call_gpt4(prompt)
+
+    def feature_forecasting(self, domain):
+        """Predicts upcoming features based on trends in the specified domain."""
+        prompt = f"Predict upcoming features in the {domain} domain based on current trends."
+        return self.call_gpt4(prompt)
+
+    def generate_test_scenarios(self, feature):
+        """Generates test scenarios in Gherkin format for the given feature."""
+        prompt = f"Generate test scenarios in Gherkin format for the feature: {feature}."
+        return self.call_gpt4(prompt)
+
+    def generate_test_data(self, test_case):
+        """Predicts test data for the generated test cases."""
+        prompt = f"Suggest test data for the following test case: {test_case}."
+        return self.call_gpt4(prompt)
+
+    def generate_ui_automation_script(self, framework, test_case):
+        """Generates Playwright or Selenium automation scripts based on user selection."""
+        if framework.lower() == "playwright":
+            prompt = f"Generate a Playwright automation script for the following test case: {test_case}."
+        elif framework.lower() == "selenium":
+            prompt = f"Generate a Selenium automation script for the following test case: {test_case}."
+        else:
+            return "Unsupported framework. Choose Playwright or Selenium."
+        return self.call_gpt4(prompt)
+
+    def validate_ai_response(self, response):
+        """Validates and authenticates the AI-generated response."""
+        if response and len(response) > 10:
+            return True
+        logging.warning("Generated response failed validation.")
+        return False
+
+# Example usage
+if __name__ == "__main__":
+    ai_service = AIService()
+    print(ai_service.generate_ideation("AI-driven software testing"))
+
+
+
+file_service.py
+
+
+import os
+import json
+import csv
+import time
+import PyPDF2
+import docx
+from PIL import Image
+import pytesseract
+import logging
+from flask import send_file
+
+# Load logging level from environment or default to INFO
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+LOG_FORMAT = os.getenv("LOG_FORMAT", "TEXT")  # Options: TEXT, JSON
+LOG_FILE = os.getenv("LOG_FILE", "app.log")
+
+# Configure logging to file
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL),
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(LOG_FILE),
+        logging.StreamHandler()
+    ]
+)
+
+def log_message(level, message, **kwargs):
+    """Handles logging in both TEXT and JSON format, writes to file."""
+    if LOG_FORMAT == "JSON":
+        log_entry = {"level": level, "message": message, **kwargs}
+        logging.info(json.dumps(log_entry))
+    else:
+        log_func = getattr(logging, level.lower(), logging.info)
+        log_func(f"{message} | {kwargs}")
+
+def process_uploaded_file(filepath):
+    """Process the uploaded file and return analysis results."""
+    start_time = time.time()
+    
+    if not os.path.exists(filepath):
+        log_message("error", "File not found", filepath=filepath)
+        return {"error": "File not found"}
+    
+    file_extension = os.path.splitext(filepath)[1].lower()
+    log_message("info", "Processing file", filepath=filepath, file_extension=file_extension)
+    
+    if file_extension in ['.txt', '.csv', '.json', '.pdf', '.docx']:
+        result = process_text_based_file(filepath, file_extension)
+    elif file_extension in ['.png', '.jpg', '.jpeg', '.svg']:
+        result = process_image_file(filepath)
+    else:
+        log_message("warning", "Unsupported file format", file_extension=file_extension)
+        result = {"error": "Unsupported file format"}
+    
+    elapsed_time = time.time() - start_time
+    log_message("info", "File processing completed", filepath=filepath, elapsed_time=f"{elapsed_time:.2f} seconds")
+    return result
+
+def process_text_based_file(filepath, file_extension):
+    """Processing function for text-based files."""
+    try:
+        start_time = time.time()
+        log_message("info", "Processing text-based file", filepath=filepath, file_extension=file_extension)
+        
+        if file_extension == '.txt':
+            with open(filepath, 'r', encoding='utf-8') as file:
+                content = file.read()
+            word_count = len(content.split())
+            result = {"content": content, "word_count": word_count}
+        
+        elif file_extension == '.csv':
+            with open(filepath, newline='', encoding='utf-8') as file:
+                reader = csv.reader(file)
+                content = [row for row in reader]
+            result = {"csv_data": content, "row_count": len(content)}
+        
+        elif file_extension == '.json':
+            with open(filepath, 'r', encoding='utf-8') as file:
+                content = json.load(file)
+            result = {"json_data": content, "key_count": len(content)}
+        
+        elif file_extension == '.pdf':
+            with open(filepath, 'rb') as file:
+                reader = PyPDF2.PdfReader(file)
+                text = " ".join([page.extract_text() for page in reader.pages if page.extract_text()])
+            result = {"pdf_text": text, "page_count": len(reader.pages)}
+        
+        elif file_extension == '.docx':
+            doc = docx.Document(filepath)
+            text = " ".join([para.text for para in doc.paragraphs])
+            result = {"doc_text": text, "word_count": len(text.split())}
+        
+        elapsed_time = time.time() - start_time
+        log_message("info", "Text-based file processed", filepath=filepath, elapsed_time=f"{elapsed_time:.2f} seconds")
+        return result
+    except Exception as e:
+        log_message("error", "Error processing text-based file", error=str(e))
+        return {"error": f"Error processing file: {str(e)}"}
+
+def process_image_file(filepath):
+    """Processing function for image files - Extract text using OCR."""
+    try:
+        start_time = time.time()
+        log_message("info", "Processing image file", filepath=filepath)
+        image = Image.open(filepath)
+        extracted_text = pytesseract.image_to_string(image)
+        word_count = len(extracted_text.split())
+        
+        elapsed_time = time.time() - start_time
+        log_message("info", "Image file processed", filepath=filepath, word_count=word_count, elapsed_time=f"{elapsed_time:.2f} seconds")
+        return {"extracted_text": extracted_text.strip(), "word_count": word_count}
+    except Exception as e:
+        log_message("error", "Error processing image file", error=str(e))
+        return {"error": f"Error processing image: {str(e)}"}
+
+def list_available_files(directory):
+    """Lists all available files for download."""
+    try:
+        if not os.path.exists(directory):
+            log_message("error", "Directory not found", directory=directory)
+            return {"error": "Directory not found"}
+        
+        files = os.listdir(directory)
+        log_message("info", "Files listed successfully", directory=directory, file_count=len(files))
+        return {"files": files}
+    except Exception as e:
+        log_message("error", "Error listing files", error=str(e))
+        return {"error": f"Error listing files: {str(e)}"}
+
+def download_file(filepath):
+    """Handles file download requests."""
+    try:
+        if not os.path.exists(filepath):
+            log_message("error", "File not found for download", filepath=filepath)
+            return {"error": "File not found"}
+        
+        log_message("info", "File download initiated", filepath=filepath)
+        return send_file(filepath, as_attachment=True)
+    except Exception as e:
+        log_message("error", "Error downloading file", error=str(e))
+        return {"error": f"Error downloading file: {str(e)}"}
+
+
+
+Script_service.py
+
+
+import os
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def validate_script(script_path):
+    """Validates if the generated script exists and is not empty."""
+    if os.path.exists(script_path) and os.path.getsize(script_path) > 0:
+        logging.info("Script validation successful", extra={"script_path": script_path})
+        return True
+    else:
+        logging.error("Script validation failed", extra={"script_path": script_path})
+        return False
+
+def generate_playwright_script(test_name, url, actions):
+    """Generates a Playwright script based on user input."""
+    logging.info("Generating Playwright script...")
+    
+    script_content = """
+    import { test, expect } from '@playwright/test';
+
+    test('{test_name}', async ({ page }) => {{
+        await page.goto('{url}');
+    """.format(test_name=test_name, url=url)
+    
+    for action in actions:
+        script_content += f"    {action}\n"
+    
+    script_content += "    });\n"
+    
+    script_path = f"generated_scripts/{test_name}.spec.js"
+    os.makedirs(os.path.dirname(script_path), exist_ok=True)
+    
+    with open(script_path, "w", encoding="utf-8") as script_file:
+        script_file.write(script_content)
+    
+    if validate_script(script_path):
+        return script_path
+    else:
+        raise ValueError("Generated Playwright script is invalid.")
+
+
+def generate_selenium_script(test_name, url, actions):
+    """Generates a Selenium script based on user input."""
+    logging.info("Generating Selenium script...")
+    
+    script_content = """
+    from selenium import webdriver
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.common.keys import Keys
+
+    driver = webdriver.Chrome()
+    driver.get('{url}')
+    """.format(url=url)
+    
+    for action in actions:
+        script_content += f"    {action}\n"
+    
+    script_content += "\ndriver.quit()\n"
+    
+    script_path = f"generated_scripts/{test_name}.py"
+    os.makedirs(os.path.dirname(script_path), exist_ok=True)
+    
+    with open(script_path, "w", encoding="utf-8") as script_file:
+        script_file.write(script_content)
+    
+    if validate_script(script_path):
+        return script_path
+    else:
+        raise ValueError("Generated Selenium script is invalid.")
+
+
+def generate_cucumber_script(test_name, url, actions, tool):
+    """Generates a Cucumber BDD test script and step definitions based on user input."""
+    logging.info("Generating Cucumber BDD script...")
+    
+    feature_content = """
+    Feature: {test_name}
+
+    Scenario: Test {test_name}
+        Given I open the browser
+        And I navigate to '{url}'
+    """.format(test_name=test_name, url=url)
+    
+    for action in actions:
+        feature_content += f"    And {action}\n"
+    
+    feature_content += "    Then I close the browser\n"
+    
+    feature_path = f"generated_scripts/{test_name}.feature"
+    os.makedirs(os.path.dirname(feature_path), exist_ok=True)
+    
+    with open(feature_path, "w", encoding="utf-8") as feature_file:
+        feature_file.write(feature_content)
+    
+    if not validate_script(feature_path):
+        raise ValueError("Generated Cucumber feature file is invalid.")
+    
+    step_definitions_content = """
+    from behave import given, when, then
+    {tool_import}
+
+    @given('I open the browser')
+    def step_open_browser(context):
+        {tool_driver_setup}
+
+    @given('I navigate to "{url}"')
+    def step_navigate(context):
+        context.driver.get("{url}")
+    """.format(url=url, tool_import="import { test, expect } from '@playwright/test'" if tool == "playwright" else "from selenium import webdriver", tool_driver_setup="context.page = await browser.new_page()" if tool == "playwright" else "context.driver = webdriver.Chrome()")
+    
+    for action in actions:
+        step_definitions_content += f"\n    @when('{action}')\n    def step_{action.replace(' ', '_')}(context):\n        # Implement {action} step\n        pass\n    "
+    
+    step_definitions_content += """
+    @then('I close the browser')
+    def step_close_browser(context):
+        context.driver.quit()
+    """
+    
+    step_definitions_path = f"generated_scripts/{test_name}_steps.py"
+    
+    with open(step_definitions_path, "w", encoding="utf-8") as step_file:
+        step_file.write(step_definitions_content)
+    
+    if not validate_script(step_definitions_path):
+        raise ValueError("Generated Cucumber step definitions file is invalid.")
+    
+    return feature_path, step_definitions_path
+
+
+def generate_script(tool, test_name, url, actions):
+    """Generates an automation script based on the selected tool."""
+    if tool.lower() == "playwright":
+        return generate_playwright_script(test_name, url, actions)
+    elif tool.lower() == "selenium":
+        return generate_selenium_script(test_name, url, actions)
+    elif tool.lower() == "cucumber":
+        return generate_cucumber_script(test_name, url, actions, "playwright" if "playwright" in actions else "selenium")
+    else:
+        logging.error("Invalid tool selection", extra={"tool": tool})
+        raise ValueError("Invalid tool selection. Choose 'playwright', 'selenium', or 'cucumber'.")
+
+
+Script_service.py
+
+
+
+import os
+import json
+import logging
+from pathlib import Path
+
+# Configure Logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def save_script(script_content, script_name, framework):
+    """Saves the generated script to the scripts directory."""
+    scripts_dir = Path("scripts") / framework
+    scripts_dir.mkdir(parents=True, exist_ok=True)
+    script_path = scripts_dir / f"{script_name}.{get_extension(framework)}"
+    
+    with open(script_path, "w", encoding="utf-8") as script_file:
+        script_file.write(script_content)
+    
+    logging.info(f"Script saved: {script_path}")
+    return str(script_path)
+
+def get_extension(framework):
+    """Returns file extension based on the test framework."""
+    return {
+        "playwright": "js",
+        "selenium": "java",
+        "gherkin": "feature"
+    }.get(framework, "txt")
+
+def generate_script(test_scenario, framework):
+    """Generates automation scripts based on selected framework."""
+    logging.info(f"Generating {framework} script for scenario: {test_scenario}")
+    
+    if framework == "playwright":
+        script = generate_playwright_script(test_scenario)
+    elif framework == "selenium":
+        script = generate_selenium_script(test_scenario)
+    elif framework == "gherkin":
+        script = generate_gherkin_script(test_scenario)
+    else:
+        logging.error("Unsupported framework")
+        return None
+    
+    return save_script(script, "test_script", framework)
+
+def generate_playwright_script(test_scenario):
+    """Generates a Playwright script."""
+    return f"""const {{ test, expect }} = require('@playwright/test');
+
+test('Generated Test', async ({{ page }}) => {{
+    await page.goto('{test_scenario['url']}');
+    await expect(page).toHaveTitle('{test_scenario['expected_title']}');
+}});"""
+
+def generate_selenium_script(test_scenario):
+    """Generates a Selenium script in Java."""
+    return f"""import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.junit.Assert;
+
+public class TestScript {{
+    public static void main(String[] args) {{
+        WebDriver driver = new ChromeDriver();
+        driver.get("{test_scenario['url']}");
+        Assert.assertEquals("{test_scenario['expected_title']}", driver.getTitle());
+        driver.quit();
+    }}
+}}"""
+
+def generate_gherkin_script(test_scenario):
+    """Generates a Gherkin (Cucumber) feature file."""
+    return f"""Feature: Automated UI Test
+
+Scenario: Verify page title
+    Given I open the browser
+    When I navigate to "{test_scenario['url']}"
+    Then the page title should be "{test_scenario['expected_title']}"""""
+
+def validate_script(script_path, framework):
+    """Validates the generated script before execution."""
+    if not os.path.exists(script_path):
+        logging.error("Script file not found.")
+        return False
+    
+    with open(script_path, "r", encoding="utf-8") as file:
+        script_content = file.read()
+    
+    if framework == "playwright":
+        return "expect(" in script_content
+    elif framework == "selenium":
+        return "WebDriver" in script_content and "driver.get(" in script_content
+    elif framework == "gherkin":
+        return "Feature:" in script_content and "Scenario:" in script_content
+    else:
+        logging.warning("Unknown framework for validation.")
+        return False
+
+
+Utils.py
+
+
+import os
+import json
+import logging
+import hashlib
+from datetime import datetime
+
+# Load logging level from environment or default to INFO
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+LOG_FORMAT = os.getenv("LOG_FORMAT", "TEXT")  # Options: TEXT, JSON
+LOG_FILE = os.getenv("LOG_FILE", "app.log")
+
+# Configure logging
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL),
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(LOG_FILE),
+        logging.StreamHandler()
+    ]
+)
+
+def log_message(level, message, **kwargs):
+    """Handles logging in both TEXT and JSON format, writes to file."""
+    if LOG_FORMAT == "JSON":
+        log_entry = {"level": level, "message": message, **kwargs}
+        logging.info(json.dumps(log_entry))
+    else:
+        log_func = getattr(logging, level.lower(), logging.info)
+        log_func(f"{message} | {kwargs}")
+
+def generate_hash(content):
+    """Generate SHA-256 hash for given content."""
+    return hashlib.sha256(content.encode()).hexdigest()
+
+def get_timestamp():
+    """Return the current timestamp in ISO format."""
+    return datetime.utcnow().isoformat()
+
+def save_json(filepath, data):
+    """Save data to a JSON file."""
+    try:
+        with open(filepath, 'w', encoding='utf-8') as file:
+            json.dump(data, file, indent=4)
+        log_message("info", "JSON file saved successfully", filepath=filepath)
+    except Exception as e:
+        log_message("error", "Error saving JSON file", error=str(e))
+
+def load_json(filepath):
+    """Load data from a JSON file."""
+    try:
+        with open(filepath, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+        log_message("info", "JSON file loaded successfully", filepath=filepath)
+        return data
+    except Exception as e:
+        log_message("error", "Error loading JSON file", error=str(e))
+        return None
+
+def validate_file_extension(filename, allowed_extensions):
+    """Validate if a file has an allowed extension."""
+    ext = os.path.splitext(filename)[1].lower()
+    return ext in allowed_extensions
+
+def create_directory_if_not_exists(directory):
+    """Create a directory if it does not exist."""
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+        log_message("info", "Directory created", directory=directory)
+    else:
+        log_message("info", "Directory already exists", directory=directory)
+
+
+
+Config.py
+
+import os
+import logging
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+class Config:
+    """Application Configuration Class"""
+
+    # General Configurations
+    APP_NAME = os.getenv("APP_NAME", "Synthora")
+    ENVIRONMENT = os.getenv("ENVIRONMENT", "development")  # development, staging, production
+    DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+    
+    # Logging Configurations
+    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+    LOG_FORMAT = os.getenv("LOG_FORMAT", "TEXT")  # Options: TEXT, JSON
+    LOG_FILE = os.getenv("LOG_FILE", "app.log")
+
+    # AI Model Configurations
+    AI_MODEL = os.getenv("AI_MODEL", "gpt-4")
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+    MAX_TOKENS = int(os.getenv("MAX_TOKENS", 2048))
+    TEMPERATURE = float(os.getenv("TEMPERATURE", 0.7))
+
+    # File Handling Configurations
+    UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "uploads")
+    ALLOWED_EXTENSIONS = {"txt", "csv", "json", "pdf", "docx", "png", "jpg", "jpeg"}
+
+    # Automation Script Configurations
+    SCRIPT_STORAGE = os.getenv("SCRIPT_STORAGE", "scripts")
+    DEFAULT_AUTOMATION_FRAMEWORK = os.getenv("DEFAULT_AUTOMATION_FRAMEWORK", "playwright")
+
+    # Security & Secrets
+    SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key")
+    JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", 24))
+
+    @staticmethod
+    def init_app(app):
+        """Initialize the application with configuration settings."""
+        logging.basicConfig(
+            level=getattr(logging, Config.LOG_LEVEL),
+            format='%(asctime)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.FileHandler(Config.LOG_FILE),
+                logging.StreamHandler()
+            ]
+        )
+
+# Select configuration based on environment
+config = Config()
