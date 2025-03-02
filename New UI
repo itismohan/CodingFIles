@@ -117,3 +117,89 @@ const useDarkMode = () => {
 };
 
 export default useDarkMode;
+
+
+------------------------------------------------------
+
+Sure! Lucide-react is a great lightweight alternative to react-icons with a modern look. Here’s the updated sidebar using lucide-react icons instead.
+
+🌟 Updated Sidebar with Lucide-React Icons
+
+Save this file as synthora_frontend/src/components/Sidebar.js:
+
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Home, Layers, FileText, List, Code, Database, ChevronLeft, ChevronRight, Moon, Sun } from "lucide-react";
+import useDarkMode from "../hooks/useDarkMode";
+
+const Sidebar = () => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [darkMode, toggleDarkMode] = useDarkMode();
+
+  const menuItems = [
+    { name: "Ideate", path: "/ideate", icon: <Home size={20} /> },
+    { name: "Features", path: "/features", icon: <Layers size={20} /> },
+    { name: "Sagas", path: "/sagas", icon: <FileText size={20} /> },
+    { name: "User Stories", path: "/user-stories", icon: <List size={20} /> },
+    { name: "Test Scenarios", path: "/test-scenarios", icon: <FileText size={20} /> },
+    { name: "Test Cases", path: "/test-cases", icon: <List size={20} /> },
+    { name: "Test Scripts", path: "/test-scripts", icon: <Code size={20} /> },
+    { name: "Test Data", path: "/test-data", icon: <Database size={20} /> },
+  ];
+
+  return (
+    <div className={`h-screen bg-gradient-to-b from-blue-900 to-gray-900 text-white p-4 transition-all duration-300 shadow-lg ${isCollapsed ? "w-16" : "w-64"}`}>
+      {/* Toggle Sidebar Button */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute top-5 right-[-10px] bg-gray-800 p-2 rounded-full shadow-md hover:bg-gray-700 transition-all"
+      >
+        {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+      </button>
+
+      {/* Dark Mode Toggle */}
+      <button
+        onClick={toggleDarkMode}
+        className="mb-6 flex items-center justify-center p-2 bg-blue-700 hover:bg-blue-600 rounded-md w-full transition-all"
+      >
+        {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+      </button>
+
+      {/* Menu Items */}
+      <nav className="space-y-3">
+        {menuItems.map((item) => (
+          <Link
+            key={item.name}
+            to={item.path}
+            className="flex items-center gap-3 p-3 text-lg font-medium rounded-lg transition-all hover:bg-blue-600 hover:text-white"
+          >
+            <span>{item.icon}</span> {!isCollapsed && <span>{item.name}</span>}
+          </Link>
+        ))}
+      </nav>
+    </div>
+  );
+};
+
+export default Sidebar;
+
+🎨 Enhancements:
+
+✅ Replaced react-icons with lucide-react
+✅ Same Ocean UI Theme – Deep Blue to Dark Gray Gradient
+✅ Smooth Collapsible Sidebar Animation
+✅ Lucide Icons for a Cleaner Look
+✅ Hover Effects & Dark Mode Support
+
+🚀 How to Install lucide-react
+
+Run this command to install:
+
+npm install lucide-react
+
+🌟 Preview
+
+📌 Collapsed Sidebar: Minimal & Clean
+📌 Expanded Sidebar: Ocean UI Theme with Icons & Hover Effects
+
+Try it out and let me know if you need more changes! 🚀🎨
