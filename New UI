@@ -95,3 +95,25 @@ npm start
 🌊 Ocean UI Theme with Icons & Hover Effects
 
 🚀 Try it out and let me know if you need more tweaks! 🎨🔥
+
+import { useState, useEffect } from "react";
+
+const useDarkMode = () => {
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [darkMode]);
+
+  return [darkMode, () => setDarkMode(!darkMode)];
+};
+
+export default useDarkMode;
