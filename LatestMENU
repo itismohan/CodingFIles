@@ -1,0 +1,145 @@
+SIDEBAR
+------
+
+import { useState } from "react";
+import { LayoutDashboard, FileText, Grid, List, File, Clipboard, Code, BarChart, FilePlus } from "lucide-react";
+
+const Sidebar = ({ activePage, setActivePage }) => {
+  const menuItems = [
+    { name: "Dashboard", icon: <LayoutDashboard size={20} /> },
+    { name: "Ideate", icon: <FileText size={20} /> },
+    { name: "Wireframes", icon: <Grid size={20} /> },
+    { name: "Features", icon: <List size={20} /> },
+    { name: "Epics", icon: <File size={20} /> },
+    { name: "User Stories", icon: <Clipboard size={20} /> },
+    { name: "Scenarios", icon: <Code size={20} /> },
+    { name: "Test Cases", icon: <BarChart size={20} /> },
+    { name: "Test Data", icon: <FilePlus size={20} /> },
+  ];
+
+  return (
+    <aside className="sidebar">
+      <h1 className="text-2xl font-bold mb-6">Synthora</h1>
+      <nav>
+        {menuItems.map((item) => (
+          <button
+            key={item.name}
+            onClick={() => setActivePage(item.name)}
+            className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 w-full ${
+              activePage === item.name ? "bg-indigo-600 text-white font-bold" : "hover:bg-gray-800"
+            }`}
+          >
+            {item.icon}
+            {item.name}
+          </button>
+        ))}
+      </nav>
+    </aside>
+  );
+};
+
+export default Sidebar;
+
+
+-------
+
+DASHBOARD
+
+import { useState } from "react";
+import Sidebar from "./Sidebar";
+import { Search, PlusCircle } from "lucide-react";
+
+const Dashboard = () => {
+  const [activePage, setActivePage] = useState("Dashboard");
+
+  return (
+    <div className="dashboard-container">
+      <Sidebar activePage={activePage} setActivePage={setActivePage} />
+      <main className="main-content">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold">{activePage}</h2>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search..."
+              className="search-bar"
+            />
+            <Search className="absolute right-3 top-3 text-gray-500" size={20} />
+          </div>
+        </div>
+
+        {/* Dashboard Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="card">
+            <h3 className="text-xl font-semibold">Tokens Used</h3>
+            <p className="text-3xl font-bold">12,450</p>
+          </div>
+          <div className="card">
+            <h3 className="text-xl font-semibold">Test Cases Generated</h3>
+            <p className="text-3xl font-bold">342</p>
+          </div>
+          <div className="card">
+            <h3 className="text-xl font-semibold">Epics Generated</h3>
+            <p className="text-3xl font-bold">78</p>
+          </div>
+          <div className="card">
+            <h3 className="text-xl font-semibold">Features Generated</h3>
+            <p className="text-3xl font-bold">215</p>
+          </div>
+        </div>
+
+        {/* Plus Icon for adding Inputs */}
+        <div className="mt-6 flex justify-center">
+          <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-full shadow-md hover:bg-indigo-700 transition-all">
+            <PlusCircle size={20} />
+            Add Input
+          </button>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default Dashboard;
+
+
+
+------------
+app.css
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Sidebar Styling */
+.sidebar {
+  @apply bg-gray-900 text-white h-screen w-64 fixed top-0 left-0 flex flex-col justify-between p-6;
+}
+
+/* Dashboard Layout */
+.dashboard-container {
+  @apply flex min-h-screen bg-gray-100 text-gray-900;
+}
+
+.main-content {
+  @apply flex-1 p-6 ml-64;
+}
+
+/* Card Styling */
+.card {
+  @apply bg-white shadow-lg rounded-xl p-5 transition-all duration-300;
+}
+
+.card:hover {
+  @apply shadow-2xl scale-105;
+}
+
+/* Search Bar */
+.search-bar {
+  @apply bg-white text-gray-800 p-3 pl-10 rounded-full shadow-md w-72 transition-all;
+}
+
+.search-bar:focus {
+  @apply ring-2 ring-indigo-400;
+}
