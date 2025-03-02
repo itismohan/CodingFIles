@@ -140,6 +140,370 @@ app.css
   @apply bg-white text-gray-800 p-3 pl-10 rounded-full shadow-md w-72 transition-all;
 }
 
+
+
+
+
+
+----------------------------
+searchPage
+----------------------------
+
+Here’s how you can separate the CSS and JavaScript code for better maintainability:
+
+1. Create a new CSS file: SearchPage.css
+
+Save this file inside your styles folder (/src/styles/SearchPage.css).
+
+/* SearchPage.css */
+.search-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #1a1a1a;
+  color: white;
+  padding: 1.5rem;
+}
+
+.search-card {
+  width: 100%;
+  max-width: 768px;
+  padding: 1.5rem;
+  background-color: #2d2d2d;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.search-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background-color: #3a3a3a;
+  border: 1px solid #555;
+  color: white;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #007bff;
+  box-shadow: 0px 0px 8px rgba(0, 123, 255, 0.5);
+}
+
+.search-options {
+  position: absolute;
+  left: 0;
+  margin-top: 0.5rem;
+  width: 160px;
+  background-color: #333;
+  border: 1px solid #444;
+  border-radius: 6px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.search-options button {
+  width: 100%;
+  padding: 0.5rem;
+  text-align: left;
+  background: none;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.search-options button:hover {
+  background-color: #444;
+}
+
+.plus-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background-color: #007bff;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.plus-button:hover {
+  background-color: #0056b3;
+}
+
+.submit-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #28a745;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.submit-button:hover {
+  background-color: #218838;
+}
+
+2. Update SearchPage.js
+
+Now, update your SearchPage.js file and import the CSS styles.
+
+import { useState } from "react";
+import { Plus, Send } from "lucide-react";
+import { Button, Input, Card, CardContent } from "@/components/ui";
+import "@/styles/SearchPage.css"; // Import the separated CSS file
+
+const SearchPage = () => {
+  const [inputFields, setInputFields] = useState([""]);
+  const [showOptions, setShowOptions] = useState(false);
+
+  const addInputField = () => {
+    setInputFields((prevFields) => [...prevFields, ""]);
+  };
+
+  return (
+    <div className="search-container">
+      <Card className="search-card">
+        <CardContent>
+          <h1 className="search-title">Ask me anything</h1>
+          <div className="space-y-3">
+            {inputFields.map((_, index) => (
+              <Input
+                key={index}
+                type="text"
+                placeholder="Type your query..."
+                className="search-input"
+              />
+            ))}
+          </div>
+          <div className="flex items-center gap-3 mt-4">
+            <div className="relative">
+              <Button
+                className="plus-button"
+                onClick={() => setShowOptions((prev) => !prev)}
+              >
+                <Plus size={24} />
+              </Button>
+              {showOptions && (
+                <div className="search-options">
+                  <button onClick={addInputField}>Add Input Field</button>
+                  <button>Upload File</button>
+                  <button>Search Web</button>
+                </div>
+              )}
+            </div>
+            <Button className="submit-button">
+              Submit <Send size={18} />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default SearchPage;
+
+3. Folder Structure
+
+Ensure your folder structure is set up correctly:
+
+/src
+  ├── components
+  │   ├── ui
+  │   │   ├── Card.js
+  │   │   ├── Input.js
+  │   │   ├── Button.js
+  ├── styles
+  │   ├── SearchPage.css   <-- New CSS file
+  ├── pages
+  │   ├── SearchPage.js
+
+Now, your CSS and JavaScript are separated, making your code cleaner, modular, and easy to maintain. 🚀
+
+Let me know if you need further improvements! 🎨
+
+
+
+
+Yes! 🚀 You can reuse this template for Ideate, Features, Test Scenarios, Test Cases, Epics, and other sections with minimal modifications. Here’s how you can make it dynamic and reusable for different sections:
+
+1. Convert it into a Reusable Component
+
+Instead of duplicating code for each section, create a generic component called QueryPage.js that can be reused across different pages.
+
+📌 Create a new file: /src/components/QueryPage.js
+
+import { useState } from "react";
+import { Plus, Send } from "lucide-react";
+import { Button, Input, Card, CardContent } from "@/components/ui";
+import "@/styles/SearchPage.css";
+
+const QueryPage = ({ title }) => {
+  const [inputFields, setInputFields] = useState([""]);
+  const [showOptions, setShowOptions] = useState(false);
+
+  const addInputField = () => {
+    setInputFields((prevFields) => [...prevFields, ""]);
+  };
+
+  return (
+    <div className="search-container">
+      <Card className="search-card">
+        <CardContent>
+          <h1 className="search-title">{title}</h1>
+          <div className="space-y-3">
+            {inputFields.map((_, index) => (
+              <Input
+                key={index}
+                type="text"
+                placeholder="Type your query..."
+                className="search-input"
+              />
+            ))}
+          </div>
+          <div className="flex items-center gap-3 mt-4">
+            <div className="relative">
+              <Button
+                className="plus-button"
+                onClick={() => setShowOptions((prev) => !prev)}
+              >
+                <Plus size={24} />
+              </Button>
+              {showOptions && (
+                <div className="search-options">
+                  <button onClick={addInputField}>Add Input Field</button>
+                  <button>Upload File</button>
+                  <button>Search Web</button>
+                </div>
+              )}
+            </div>
+            <Button className="submit-button">
+              Submit <Send size={18} />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default QueryPage;
+
+2. Reuse it Across Different Pages
+
+Now, you can use this QueryPage component for different sections like Ideate, Features, Epics, etc.
+
+📌 Example: /src/pages/Ideate.js
+
+import QueryPage from "@/components/QueryPage";
+
+const Ideate = () => {
+  return <QueryPage title="Ideate" />;
+};
+
+export default Ideate;
+
+📌 Example: /src/pages/Features.js
+
+import QueryPage from "@/components/QueryPage";
+
+const Features = () => {
+  return <QueryPage title="Features" />;
+};
+
+export default Features;
+
+📌 Example: /src/pages/TestCases.js
+
+import QueryPage from "@/components/QueryPage";
+
+const TestCases = () => {
+  return <QueryPage title="Test Cases" />;
+};
+
+export default TestCases;
+
+3. Update Your Sidebar to Navigate to These Pages
+
+Modify your Sidebar menu to include links to these new pages:
+
+📌 Example: /src/components/Sidebar.js
+
+import { Link } from "react-router-dom";
+
+const Sidebar = () => {
+  return (
+    <nav className="sidebar">
+      <ul>
+        <li><Link to="/dashboard">Dashboard</Link></li>
+        <li><Link to="/ideate">Ideate</Link></li>
+        <li><Link to="/wireframes">Wireframes</Link></li>
+        <li><Link to="/features">Features</Link></li>
+        <li><Link to="/epics">Epics</Link></li>
+        <li><Link to="/userstories">User Stories</Link></li>
+        <li><Link to="/scenarios">Scenarios</Link></li>
+        <li><Link to="/test-cases">Test Cases</Link></li>
+        <li><Link to="/test-data">Test Data</Link></li>
+        <li><Link to="/test-scripts">Test Scripts</Link></li>
+      </ul>
+    </nav>
+  );
+};
+
+export default Sidebar;
+
+4. Update Your Routes
+
+Make sure your App.js or Routes.js includes these new routes:
+
+📌 Example: /src/App.js
+
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Sidebar from "@/components/Sidebar";
+import Ideate from "@/pages/Ideate";
+import Features from "@/pages/Features";
+import TestCases from "@/pages/TestCases";
+
+function App() {
+  return (
+    <Router>
+      <div className="app-container">
+        <Sidebar />
+        <Routes>
+          <Route path="/ideate" element={<Ideate />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/test-cases" element={<TestCases />} />
+          {/* Add other routes here */}
+        </Routes>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
+
+🎯 Now, You Have a Fully Reusable Template!
+
+✅ Reused the UI for multiple pages
+✅ Dynamic titles for different sections
+✅ Sidebar navigation updated
+✅ Easy to maintain and expand
+
+Let me know if you need any refinements! 🚀🔥
+
+
 .search-bar:focus {
   @apply ring-2 ring-indigo-400;
 }
