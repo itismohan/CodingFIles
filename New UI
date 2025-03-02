@@ -1,0 +1,97 @@
+Here’s an enhanced and visually appealing sidebar with:
+✅ Modern UI with smooth animations
+✅ Beautiful color palette (Ocean UI theme)
+✅ Icons for all menu items
+✅ Collapsible sidebar
+✅ Dark Mode Support
+✅ Hover Effects & Transitions
+
+🌟 Updated Sidebar with Icons & Colors
+
+Save this file as synthora_frontend/src/components/Sidebar.js:
+
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { FiHome, FiLayers, FiFileText, FiList, FiCode, FiDatabase, FiChevronLeft, FiChevronRight, FiMoon, FiSun } from "react-icons/fi";
+import useDarkMode from "../hooks/useDarkMode";
+
+const Sidebar = () => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [darkMode, toggleDarkMode] = useDarkMode();
+
+  const menuItems = [
+    { name: "Ideate", path: "/ideate", icon: <FiHome /> },
+    { name: "Features", path: "/features", icon: <FiLayers /> },
+    { name: "Sagas", path: "/sagas", icon: <FiFileText /> },
+    { name: "User Stories", path: "/user-stories", icon: <FiList /> },
+    { name: "Test Scenarios", path: "/test-scenarios", icon: <FiFileText /> },
+    { name: "Test Cases", path: "/test-cases", icon: <FiList /> },
+    { name: "Test Scripts", path: "/test-scripts", icon: <FiCode /> },
+    { name: "Test Data", path: "/test-data", icon: <FiDatabase /> },
+  ];
+
+  return (
+    <div className={`h-screen bg-gradient-to-b from-blue-900 to-gray-900 text-white p-4 transition-all duration-300 shadow-lg ${isCollapsed ? "w-16" : "w-64"}`}>
+      {/* Toggle Sidebar Button */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute top-5 right-[-10px] bg-gray-800 p-2 rounded-full shadow-md hover:bg-gray-700 transition-all"
+      >
+        {isCollapsed ? <FiChevronRight size={20} /> : <FiChevronLeft size={20} />}
+      </button>
+
+      {/* Dark Mode Toggle */}
+      <button
+        onClick={toggleDarkMode}
+        className="mb-6 flex items-center justify-center p-2 bg-blue-700 hover:bg-blue-600 rounded-md w-full transition-all"
+      >
+        {darkMode ? <FiSun size={20} /> : <FiMoon size={20} />}
+      </button>
+
+      {/* Menu Items */}
+      <nav className="space-y-3">
+        {menuItems.map((item) => (
+          <Link
+            key={item.name}
+            to={item.path}
+            className="flex items-center gap-3 p-3 text-lg font-medium rounded-lg transition-all hover:bg-blue-600 hover:text-white"
+          >
+            <span className="text-xl">{item.icon}</span> {!isCollapsed && <span>{item.name}</span>}
+          </Link>
+        ))}
+      </nav>
+    </div>
+  );
+};
+
+export default Sidebar;
+
+🎨 Enhancements:
+
+✅ Ocean UI Colors – Deep Blue to Dark Gray Gradient
+✅ Icons for all menu items – Improves usability
+✅ Collapsible sidebar with smooth animations
+✅ Hover Effects – Changes color on hover
+✅ Dark Mode Support
+
+🚀 How to Use This
+	1.	Replace Sidebar.js with this version.
+	2.	Ensure you have useDarkMode.js in src/hooks/.
+	3.	Install React Icons if not installed:
+
+npm install react-icons
+
+
+	4.	Start the frontend:
+
+npm start
+
+🌟 Preview
+
+📌 Collapsed Sidebar:
+🟦 Minimal & Clean
+
+📌 Expanded Sidebar:
+🌊 Ocean UI Theme with Icons & Hover Effects
+
+🚀 Try it out and let me know if you need more tweaks! 🎨🔥
