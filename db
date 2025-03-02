@@ -1,0 +1,122 @@
+database.py
+
+
+from pymongo import MongoClient
+import redis
+import os
+import logging
+
+# Initialize logger
+logger = logging.getLogger(__name__)
+
+# Load MongoDB connection URI from environment variables
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/synthora_db")
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_DB = int(os.getenv("REDIS_DB", 0))
+
+# Connect to MongoDB
+try:
+    client = MongoClient(MONGO_URI)
+    db = client.get_database()
+    logger.info("Connected to MongoDB successfully.")
+except Exception as e:
+    logger.error(f"Error connecting to MongoDB: {str(e)}", exc_info=True)
+    db = None  # Set db to None if connection fails
+
+# Connect to Redis
+try:
+    redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True)
+    if redis_client.ping():
+        logger.info("Connected to Redis successfully.")
+except Exception as e:
+    logger.error(f"Error connecting to Redis: {str(e)}", exc_info=True)
+    redis_client = None  # Set redis_client to None if connection fails
+
+
+
+
+
+compose.yml
+
+
+version: '3.8'
+
+services:
+  # 🚀 Flask Backend
+  backend:
+    build: ./synthora_backend
+    container_name: synthora_backend
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+      - mongodb
+    environment:
+      FLASK_ENV: production
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MONGO_URI: mongodb://mongodb:27017/synthora_db
+    networks:
+      - synthora_network
+
+  # 🌐 React Frontend
+  frontend:
+    build: ./synthora_frontend
+    container_name: synthora_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - synthora_network
+
+  # 🔴 Redis (for caching)
+  redis:
+    image: redis:latest
+    container_name: synthora_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - synthora_network
+
+  # 🟢 MongoDB (for data storage)
+  mongodb:
+    image: mongo:latest
+    container_name: synthora_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - synthora_network
+
+  # 📊 MongoDB Express (Optional UI for MongoDB)
+  mongo-express:
+    image: mongo-express
+    container_name: synthora_mongo_express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: password
+    depends_on:
+      - mongodb
+    networks:
+      - synthora_network
+
+# 🔗 Define a shared network
+networks:
+  synthora_network:
+    driver: bridge
+
+# 📦 Persistent Storage for MongoDB
+volumes:
+  mongodb_data:
+    driver: local
