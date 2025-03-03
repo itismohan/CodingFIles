@@ -507,3 +507,150 @@ Let me know if you need any refinements! 🚀🔥
 .search-bar:focus {
   @apply ring-2 ring-indigo-400;
 }
+
+
+
+
+
+---------------------------------------------------
+
+Yes! You can enhance the UI to move the search box to the bottom like ChatGPT and add the “+” icon and submit arrow. Here’s how you can update your React and CSS code:
+
+Updated SearchPage.js
+
+This update:
+✅ Moves the input field to the bottom of the screen.
+✅ Adds a ”+” button for additional options.
+✅ Adds a “submit arrow” button for sending queries.
+
+import { useState } from "react";
+import { Plus, Send } from "lucide-react";
+import { Button, Input } from "@/components/ui";
+import "@/styles/SearchPage.css";
+
+const SearchPage = () => {
+  const [inputFields, setInputFields] = useState([""]);
+  const [showOptions, setShowOptions] = useState(false);
+
+  const addInputField = () => {
+    setInputFields((prevFields) => [...prevFields, ""]);
+  };
+
+  return (
+    <div className="search-container">
+      <div className="input-container">
+        <Button className="plus-button" onClick={() => setShowOptions(!showOptions)}>
+          <Plus size={24} />
+        </Button>
+
+        <Input
+          type="text"
+          placeholder="Ask me anything..."
+          className="search-input"
+        />
+
+        <Button className="submit-button">
+          <Send size={20} />
+        </Button>
+      </div>
+
+      {showOptions && (
+        <div className="search-options">
+          <button onClick={addInputField}>Add Input Field</button>
+          <button>Upload File</button>
+          <button>Search Web</button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default SearchPage;
+
+Updated SearchPage.css
+
+This will:
+✅ Fix the input field at the bottom
+✅ Style the “+” and “submit” buttons
+✅ Make it look modern and clean
+
+.search-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100vh;
+  padding: 20px;
+  background-color: #f8f9fa;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  width: 50%;
+  max-width: 700px;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 20px;
+}
+
+.plus-button,
+.submit-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+}
+
+.plus-button {
+  color: #6c757d;
+}
+
+.submit-button {
+  color: #007bff;
+}
+
+.search-options {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.search-options button {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+🎯 Final Result
+
+✔ The search box will stay fixed at the bottom
+✔ The “+” button will open extra options
+✔ The “Submit” arrow will send the query
+✔ Fully responsive and clean UI
+
+Would you like any more UI tweaks? 🚀🔥
