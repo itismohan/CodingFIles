@@ -1,0 +1,270 @@
+--- SEARCHPAGE----
+
+import { useState } from "react";
+import { Plus, Send, Moon, Sun } from "lucide-react";
+import { Button, Input, Card, CardContent } from "@/components/ui";
+import "./SearchPage.css";
+
+const SearchPage = () => {
+  const [inputFields, setInputFields] = useState([""]);
+  const [showOptions, setShowOptions] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+
+  const addInputField = () => {
+    setInputFields((prevFields) => [...prevFields, ""]);
+  };
+
+  return (
+    <div className={`container ${darkMode ? "dark" : ""}`}>
+      <Card className="search-card">
+        <CardContent>
+          <h1 className="title">Ask me anything</h1>
+          <div className="input-container">
+            {inputFields.map((_, index) => (
+              <Input key={index} type="text" placeholder="Type your query..." className="input-box" />
+            ))}
+          </div>
+          <div className="actions">
+            <div className="relative">
+              <Button className="icon-button" onClick={() => setShowOptions((prev) => !prev)}>
+                <Plus size={24} />
+              </Button>
+              {showOptions && (
+                <div className="options-menu">
+                  <button className="option-item" onClick={addInputField}>Add Input Field</button>
+                  <button className="option-item">Upload File</button>
+                  <button className="option-item">Search Web</button>
+                </div>
+              )}
+            </div>
+            <Button className="submit-button">
+              Submit <Send size={18} />
+            </Button>
+            <Button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>
+              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default SearchPage;
+
+
+SearchPage.css
+
+/* SearchPage.css */
+
+/* Light Mode (Default) */
+:root {
+  --bg-color: #f9fafb;
+  --text-color: #1f2937;
+  --card-bg: #ffffff;
+  --input-bg: #e5e7eb;
+  --border-color: #d1d5db;
+  --button-bg: #2563eb;
+  --button-hover-bg: #1d4ed8;
+}
+
+/* Dark Mode */
+[data-theme="dark"] {
+  --bg-color: #111827;
+  --text-color: #e5e7eb;
+  --card-bg: #1f2937;
+  --input-bg: #374151;
+  --border-color: #4b5563;
+  --button-bg: #3b82f6;
+  --button-hover-bg: #2563eb;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Main Container */
+.search-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Search Box Card */
+.search-card {
+  width: 100%;
+  max-width: 700px;
+  background: var(--card-bg);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s;
+}
+
+/* Input Field */
+.search-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s;
+  font-size: 16px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--button-bg);
+  box-shadow: 0px 0px 8px var(--button-bg);
+}
+
+/* Button Group */
+.search-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+/* Floating Plus Button */
+.plus-button {
+  background: var(--button-bg);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.plus-button:hover {
+  background: var(--button-hover-bg);
+}
+
+/* Submit Button */
+.submit-button {
+  background: var(--button-bg);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.submit-button:hover {
+  background: var(--button-hover-bg);
+}
+
+/* Dropdown Options */
+.options-dropdown {
+  position: absolute;
+  bottom: 70px;
+  left: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.options-dropdown button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.options-dropdown button:hover {
+  background: var(--input-bg);
+}
+
+/* Dark Mode Toggle */
+.toggle-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--button-bg);
+  color: white;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.toggle-container:hover {
+  background: var(--button-hover-bg);
+}
+
+---------SIDEMENU--------
+
+
+import { useState } from "react";
+import { Home, Lightbulb, Grid, Layers, BookOpen, FileText, List, Database, Code, User, Moon, Sun } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+
+const menuItems = [
+  { name: "Dashboard", icon: Home, path: "/dashboard" },
+  { name: "Ideate", icon: Lightbulb, path: "/ideate" },
+  { name: "Wireframes", icon: Grid, path: "/wireframes" },
+  { name: "Features", icon: Layers, path: "/features" },
+  { name: "Epics", icon: BookOpen, path: "/epics" },
+  { name: "User Stories", icon: FileText, path: "/userstories" },
+  { name: "Scenarios", icon: List, path: "/scenarios" },
+  { name: "Test Cases", icon: Database, path: "/testcases" },
+  { name: "Test Data", icon: Code, path: "/testdata" },
+  { name: "Test Scripts", icon: Code, path: "/testscripts" }
+];
+
+const Sidebar = () => {
+  const [collapsed, setCollapsed] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+
+  return (
+    <div className={`h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"} transition-all w-${collapsed ? "16" : "64"} fixed left-0 top-0 flex flex-col shadow-lg`}>  
+      <div className="flex items-center justify-between p-4">
+        <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-full" />
+        {!collapsed && <span className="font-bold text-lg">Synthora</span>}
+        <button onClick={() => setCollapsed(!collapsed)} className="ml-auto text-xl">☰</button>
+      </div>
+      <nav className="flex-1 mt-6 space-y-2">
+        {menuItems.map((item) => (
+          <Link key={item.name} to={item.path} className="flex items-center p-3 rounded-md hover:bg-gray-700 transition-all group relative">
+            <item.icon className="w-6 h-6" />
+            {!collapsed && <span className="ml-3">{item.name}</span>}
+            {collapsed && <span className="absolute left-14 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">{item.name}</span>}
+          </Link>
+        ))}
+      </nav>
+      <div className="p-4 mt-auto flex flex-col items-center">
+        <Button onClick={() => setDarkMode(!darkMode)} className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
+          {darkMode ? <Sun size={18} /> : <Moon size={18} />} {collapsed ? "" : darkMode ? "Light Mode" : "Dark Mode"}
+        </Button>
+        <div className="mt-4 flex items-center gap-2">
+          <User className="w-6 h-6" />
+          {!collapsed && <span>John Doe</span>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;
+
+
+
+
