@@ -113,3 +113,380 @@ const NavItem = ({ to, icon, label }) => (
 );
 
 export default Sidebar;
+
+
+
+
+
+
+
+
+Sure! Here’s how you can add a search bar similar to ChatGPT’s, placed in the top navigation bar of your dashboard. The search will filter sidebar menu items dynamically.
+
+1️⃣ Update Sidebar with Search (Sidebar.js)
+	•	Add a search input at the top.
+	•	Filter navigation items dynamically.
+
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
+import { Home, Grid, FileText, Database, ClipboardList, Code, Search } from "lucide-react";
+
+const menuItems = [
+  { to: "/", icon: <Home />, label: "Dashboard" },
+  { to: "/wireframes", icon: <Grid />, label: "Wireframes" },
+  { to: "/epics", icon: <FileText />, label: "Epics" },
+  { to: "/features", icon: <Database />, label: "Features" },
+  { to: "/test-scenarios", icon: <ClipboardList />, label: "Test Scenarios" },
+  { to: "/test-cases", icon: <FileText />, label: "Test Cases" },
+  { to: "/test-scripts", icon: <Code />, label: "Test Scripts" },
+];
+
+const Sidebar = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredItems = menuItems.filter((item) =>
+    item.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="h-screen w-64 bg-blue-900 text-white p-5 fixed">
+      <h1 className="text-2xl font-bold mb-4">Synthora</h1>
+      
+      {/* Search Bar */}
+      <div className="relative mb-4">
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full p-2 pl-10 rounded-lg bg-blue-800 text-white placeholder-gray-300 focus:outline-none"
+        />
+        <Search className="absolute left-3 top-2 text-gray-300" size={20} />
+      </div>
+
+      <nav className="flex flex-col space-y-2">
+        {filteredItems.length > 0 ? (
+          filteredItems.map((item) => <NavItem key={item.to} {...item} />)
+        ) : (
+          <p className="text-gray-300 text-sm">No results found</p>
+        )}
+      </nav>
+    </div>
+  );
+};
+
+const NavItem = ({ to, icon, label }) => (
+  <NavLink
+    to={to}
+    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition"
+  >
+    {icon}
+    <span>{label}</span>
+  </NavLink>
+);
+
+export default Sidebar;
+
+2️⃣ Add a Search Bar in the Top Navbar (Navbar.js)
+
+If you also want a search bar at the top (like ChatGPT’s), add this to a Navbar.js component:
+
+import { useState } from "react";
+import { Search } from "lucide-react";
+
+const Navbar = () => {
+  const [search, setSearch] = useState("");
+
+  return (
+    <div className="fixed top-0 left-64 right-0 bg-white shadow-md p-4 flex items-center">
+      <div className="relative w-96">
+        <input
+          type="text"
+          placeholder="Search..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full p-2 pl-10 rounded-lg border border-gray-300 focus:outline-none"
+        />
+        <Search className="absolute left-3 top-2 text-gray-500" size={20} />
+      </div>
+    </div>
+  );
+};
+
+export default Navbar;
+
+3️⃣ Integrate Navbar into App.js
+
+Modify App.js to include the new Navbar above the dashboard.
+
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Sidebar from "./components/Sidebar";
+import Navbar from "./components/Navbar";
+import Dashboard from "./pages/Dashboard";
+
+function App() {
+  return (
+    <Router>
+      <Sidebar />
+      <Navbar />
+      <div className="ml-64 mt-16 p-6">
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+        </Routes>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
+
+✅ Features & Benefits
+	•	Sidebar Search: Filters navigation items dynamically.
+	•	Top Navbar Search: Functions like ChatGPT’s.
+	•	Minimal & Elegant UI: Styled with Tailwind CSS.
+	•	Live Search: Updates results as you type.
+
+Would you like any more refinements? 🚀
+
+
+
+
+
+
+import { useState } from "react";
+import { Search, UploadCloud, Globe } from "lucide-react";
+
+const SearchPage = () => {
+  const [search, setSearch] = useState("");
+  const [file, setFile] = useState(null);
+  const [searchWeb, setSearchWeb] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const handleFileUpload = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const handleSubmit = () => {
+    console.log("Search:", search);
+    console.log("File:", file);
+    console.log("Search Web:", searchWeb);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-96 transition-all duration-300 hover:shadow-xl">
+        
+        {/* Search Bar with Animation */}
+        <div className="relative mb-4">
+          <input
+            type="text"
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            className={`w-full p-2 pl-10 rounded-lg border transition-all duration-300 focus:outline-none ${
+              isFocused ? "border-blue-500 scale-105 shadow-md" : "border-gray-300"
+            }`}
+          />
+          <Search className="absolute left-3 top-2 text-gray-500 transition-transform duration-300" size={20} />
+        </div>
+
+        {/* File Upload */}
+        <label className="flex items-center space-x-3 bg-gray-200 p-2 rounded-lg cursor-pointer mb-4 hover:bg-gray-300 transition-all duration-300">
+          <UploadCloud size={20} className="text-gray-600" />
+          <span className="text-gray-700">{file ? file.name : "Upload File"}</span>
+          <input type="file" className="hidden" onChange={handleFileUpload} />
+        </label>
+
+        {/* Search Web Toggle */}
+        <div className="flex items-center mb-4">
+          <input
+            type="checkbox"
+            id="searchWeb"
+            checked={searchWeb}
+            onChange={() => setSearchWeb(!searchWeb)}
+            className="mr-2 cursor-pointer"
+          />
+          <label htmlFor="searchWeb" className="flex items-center cursor-pointer">
+            <Globe size={20} className="text-blue-600 mr-2" />
+            <span>Search the Web</span>
+          </label>
+        </div>
+
+        {/* Submit Button with Hover Animation */}
+        <button
+          onClick={handleSubmit}
+          className="w-full bg-blue-600 text-white p-2 rounded-lg transition-all duration-300 transform hover:scale-105 hover:bg-blue-700"
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default SearchPage;
+
+
+
+
+
+------
+SearchPage +CSS
+
+-------
+
+Sure! Here’s your React component with a separate CSS file (without Tailwind).
+
+⸻
+
+📌 Steps to Use:
+
+1️⃣ Create a file SearchBar.js and paste the React code.
+2️⃣ Create a file SearchBar.css and paste the CSS code.
+3️⃣ Ensure both files are in the same folder.
+
+⸻
+
+🔹 React Component (SearchBar.js)
+
+import React, { useState } from "react";
+import { FaSearch, FaUpload, FaGlobe } from "react-icons/fa";
+import "./SearchBar.css"; // Import the CSS file
+
+const SearchBar = () => {
+  const [query, setQuery] = useState("");
+
+  return (
+    <div className="search-container">
+      <div className="search-box">
+        <FaSearch className="search-icon" />
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Enter search query..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <button className="submit-btn">Search</button>
+      </div>
+
+      <div className="options">
+        <button className="option-btn">
+          <FaUpload className="icon" /> Upload File
+        </button>
+        <button className="option-btn">
+          <FaGlobe className="icon" /> Search Web
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default SearchBar;
+
+
+
+⸻
+
+🎨 CSS File (SearchBar.css)
+
+/* Container Styling */
+.search-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+/* Search Box */
+.search-box {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border: 2px solid #ddd;
+  border-radius: 25px;
+  padding: 10px 15px;
+  width: 400px;
+  transition: all 0.3s ease;
+}
+
+.search-box:hover {
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Search Icon */
+.search-icon {
+  color: #888;
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+/* Input Field */
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  background: transparent;
+}
+
+/* Submit Button */
+.submit-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+  background: #0056b3;
+  transform: scale(1.1);
+}
+
+/* Options */
+.options {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+/* Option Buttons */
+.option-btn {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 2px solid #007bff;
+  color: #007bff;
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.option-btn:hover {
+  background: #007bff;
+  color: white;
+}
+
+.icon {
+  margin-right: 5px;
+}
+
+
+
+⸻
+
+✅ Features & Animations Included:
+
+✔ Hover Effects → Shadow on search bar, button hover color changes.
+✔ Smooth Transitions → Buttons and input field animations.
+✔ Scaling Effect → Search button enlarges slightly on hover.
+
+Now, you don’t need Tailwind CSS—just use this separate CSS file! 🎉 Let me know if you need tweaks! 🚀
