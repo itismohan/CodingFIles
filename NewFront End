@@ -634,7 +634,29 @@ const DashboardCard = ({ title, count, icon: Icon, color }) => {
 export default DashboardCard;
 
 
+import React from "react";
 
+const Card = ({ children, className }) => {
+  return (
+    <div className={`bg-white dark:bg-gray-800 shadow-md rounded-2xl p-4 ${className}`}>
+      {children}
+    </div>
+  );
+};
+
+const CardContent = ({ title, value, icon }) => {
+  return (
+    <div className="flex items-center justify-between">
+      <div>
+        <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">{title}</h3>
+        <p className="text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
+      </div>
+      <div className="text-3xl text-indigo-600 dark:text-indigo-400">{icon}</div>
+    </div>
+  );
+};
+
+export { Card, CardContent };
 
 
 
