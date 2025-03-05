@@ -27,640 +27,89 @@ Here’s the updated React frontend folder structure with all the required pages
 │── tailwind.config.js        # Tailwind configuration
 │── vite.config.js            # Vite configuration (if using Vite)
 
-Sidebar with Navigation (Sidebar.js)
+------------
+DASHBOARD
+-------------
 
-This sidebar will contain navigation links to each page, and it will support collapsible mode with icons and tooltips.
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { FaTachometerAlt, FaFileAlt, FaLayerGroup, FaList, FaCheckSquare, FaCode, FaDatabase, FaBars } from "react-icons/fa";
-
-const menuItems = [
-  { name: "Dashboard", path: "/", icon: <FaTachometerAlt /> },
-  { name: "Wireframes", path: "/wireframes", icon: <FaFileAlt /> },
-  { name: "Epics", path: "/epics", icon: <FaLayerGroup /> },
-  { name: "Features", path: "/features", icon: <FaList /> },
-  { name: "Test Scenarios", path: "/test-scenarios", icon: <FaCheckSquare /> },
-  { name: "Test Cases", path: "/test-cases", icon: <FaCheckSquare /> },
-  { name: "Test Scripts", path: "/test-scripts", icon: <FaCode /> },
-  { name: "Test Data", path: "/test-data", icon: <FaDatabase /> }
+const data = [
+  { name: "Jan", features: 30, tests: 20 },
+  { name: "Feb", features: 45, tests: 35 },
+  { name: "Mar", features: 60, tests: 50 },
+  { name: "Apr", features: 80, tests: 65 },
+  { name: "May", features: 100, tests: 80 },
 ];
-
-const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
-
-  return (
-    <div className={`h-screen bg-gray-900 text-white ${collapsed ? "w-16" : "w-64"} transition-all duration-300`}>
-      <div className="p-4 flex justify-between">
-        <h1 className={`${collapsed ? "hidden" : "text-lg"} font-bold`}>Synthora</h1>
-        <button onClick={() => setCollapsed(!collapsed)} className="text-white">
-          <FaBars />
-        </button>
-      </div>
-      <ul>
-        {menuItems.map((item) => (
-          <li key={item.name} className="p-3 hover:bg-gray-700">
-            <Link to={item.path} className="flex items-center">
-              <span className="text-lg">{item.icon}</span>
-              <span className={`${collapsed ? "hidden" : "ml-3"}`}>{item.name}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
-export default Sidebar;
-
-Routing in App.js
-
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Sidebar from "./components/Sidebar";
-import Dashboard from "./pages/Dashboard";
-import Wireframes from "./pages/Wireframes";
-import Epics from "./pages/Epics";
-import Features from "./pages/Features";
-import TestScenarios from "./pages/TestScenarios";
-import TestCases from "./pages/TestCases";
-import TestScripts from "./pages/TestScripts";
-import TestData from "./pages/TestData";
-
-function App() {
-  return (
-    <Router>
-      <div className="flex">
-        <Sidebar />
-        <div className="flex-grow p-6">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/wireframes" element={<Wireframes />} />
-            <Route path="/epics" element={<Epics />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/test-scenarios" element={<TestScenarios />} />
-            <Route path="/test-cases" element={<TestCases />} />
-            <Route path="/test-scripts" element={<TestScripts />} />
-            <Route path="/test-data" element={<TestData />} />
-          </Routes>
-        </div>
-      </div>
-    </Router>
-  );
-}
-
-export default App;
-
-Sample Page Component (Dashboard.js)
-
-Each page will follow this template.
 
 const Dashboard = () => {
   return (
-    <div className="text-gray-900">
-      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
-      <p>Welcome to the Synthora Dashboard!</p>
+    <div className="ml-64 p-10">
+      <h2 className="text-3xl font-bold mb-6">Dashboard</h2>
+      <div className="grid grid-cols-3 gap-6">
+        <Card title="Total Features" value="150" />
+        <Card title="Total Test Cases" value="320" />
+        <Card title="Automation Scripts" value="85" />
+      </div>
+
+      <div className="mt-8 bg-white p-6 shadow-lg rounded-lg">
+        <h3 className="text-xl font-semibold mb-4">Development & Testing Trends</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="features" stroke="#2563EB" strokeWidth={3} />
+            <Line type="monotone" dataKey="tests" stroke="#10B981" strokeWidth={3} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };
+
+const Card = ({ title, value }) => (
+  <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+    <h4 className="text-lg font-semibold">{title}</h4>
+    <p className="text-2xl font-bold mt-2">{value}</p>
+  </div>
+);
 
 export default Dashboard;
 
-Similarly, create Wireframes.js, Epics.js, Features.js, etc., with similar content but different headings.
 
-Enhancements:
-
-✅ Fixed Sidebar: Stays on the screen
-✅ Collapsible Sidebar: Shows only icons with tooltips when collapsed
-✅ Navigation Icons: Uses meaningful icons for each section
-✅ Responsive Design: Adapts to different screen sizes
-✅ Dark Mode (Optional): Can be added in future
-
-This setup ensures modularity, scalability, and maintainability. Let me know if you need further improvements! 🚀
-
-
-
-----------
-APP.JS
-----------
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useState } from "react";
-import Sidebar from "./components/Sidebar";
-import Dashboard from "./pages/Dashboard";
-import Wireframes from "./pages/Wireframes";
-import Epics from "./pages/Epics";
-import Features from "./pages/Features";
-import TestScenarios from "./pages/TestScenarios";
-import TestCases from "./pages/TestCases";
-import TestScripts from "./pages/TestScripts";
-import TestData from "./pages/TestData";
-
-function App() {
-  const [darkMode, setDarkMode] = useState(false);
-  return (
-    <div className={darkMode ? "dark" : ""}>
-      <Router>
-        <div className="flex">
-          <Sidebar darkMode={darkMode} setDarkMode={setDarkMode} />
-          <div className="flex-1 p-4">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/wireframes" element={<Wireframes />} />
-              <Route path="/epics" element={<Epics />} />
-              <Route path="/features" element={<Features />} />
-              <Route path="/test-scenarios" element={<TestScenarios />} />
-              <Route path="/test-cases" element={<TestCases />} />
-              <Route path="/test-scripts" element={<TestScripts />} />
-              <Route path="/test-data" element={<TestData />} />
-            </Routes>
-          </div>
-        </div>
-      </Router>
-    </div>
-  );
-}
-
-export default App;
-
-
-
------------------------------
-Dashboard
---------------------------
-
-I’ll provide a fully functional DashboardPage.js that matches the futuristic UI you want, inspired by your uploaded design.
-
-✅ Dashboard Features Included:
-	1.	Sidebar Navigation (Collapsible with Icons & Tooltips)
-	2.	Dashboard Cards (Displaying stats for Epics, Features, Test Cases, etc.)
-	3.	Analytics Charts (Using recharts for trends visualization)
-	4.	Recent Activities Panel (With timestamps)
-	5.	UI Enhancements
-	•	Dark Mode Toggle
-	•	Framer Motion Animations
-	•	Gradient Background Effects
-	•	Lucide Icons with Colors
-
-📂 File Structure (Frontend)
-
-src/
-│── components/
-│   ├── Sidebar.js
-│   ├── DashboardCards.js
-│   ├── AnalyticsChart.js
-│   ├── RecentActivities.js
-│── pages/
-│   ├── DashboardPage.js
-│── App.js
-│── index.js
-│── styles.css
-
-🏗 DashboardPage.js
-
-import { useState } from "react";
-import Sidebar from "../components/Sidebar";
-import DashboardCards from "../components/DashboardCards";
-import AnalyticsChart from "../components/AnalyticsChart";
-import RecentActivities from "../components/RecentActivities";
-import { motion } from "framer-motion";
-
-const DashboardPage = () => {
-  const [darkMode, setDarkMode] = useState(false);
-
-  return (
-    <div className={`${darkMode ? "dark bg-gray-900 text-white" : "bg-gray-100 text-gray-900"} flex h-screen`}>
-      {/* Sidebar */}
-      <Sidebar darkMode={darkMode} />
-
-      {/* Main Content */}
-      <div className="flex-1 p-6 overflow-auto">
-        {/* Header Section */}
-        <motion.div 
-          className="flex justify-between items-center"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h1 className="text-3xl font-bold">Welcome Back, User 👋</h1>
-          <button 
-            onClick={() => setDarkMode(!darkMode)} 
-            className="bg-purple-600 text-white px-4 py-2 rounded-lg transition hover:bg-purple-700"
-          >
-            {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
-          </button>
-        </motion.div>
-
-        {/* Dashboard Stats Cards */}
-        <DashboardCards />
-
-        {/* Analytics Chart */}
-        <AnalyticsChart />
-
-        {/* Recent Activities */}
-        <RecentActivities />
-      </div>
-    </div>
-  );
-};
-
-export default DashboardPage;
-
-🏗 DashboardCards.js
-
-import { motion } from "framer-motion";
-import { LayoutDashboard, FileCode, Bug, Database, FlaskConical } from "lucide-react";
-
-const DashboardCards = () => {
-  const stats = [
-    { title: "Epics", value: "24", icon: <LayoutDashboard className="text-blue-500" size={32} /> },
-    { title: "Features", value: "120", icon: <FileCode className="text-green-500" size={32} /> },
-    { title: "Test Cases", value: "340", icon: <Bug className="text-red-500" size={32} /> },
-    { title: "Test Scripts", value: "89", icon: <FlaskConical className="text-purple-500" size={32} /> },
-    { title: "Test Data", value: "1.2M", icon: <Database className="text-yellow-500" size={32} /> }
-  ];
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-6">
-      {stats.map((stat, index) => (
-        <motion.div
-          key={index}
-          className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md flex items-center gap-4"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: index * 0.1 }}
-        >
-          {stat.icon}
-          <div>
-            <h3 className="text-lg font-semibold">{stat.title}</h3>
-            <p className="text-xl font-bold">{stat.value}</p>
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  );
-};
-
-export default DashboardCards;
-
-📊 AnalyticsChart.js (Using Recharts)
-
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-
-const data = [
-  { name: "Jan", features: 20, tests: 50 },
-  { name: "Feb", features: 35, tests: 80 },
-  { name: "Mar", features: 50, tests: 100 },
-  { name: "Apr", features: 75, tests: 130 },
-  { name: "May", features: 90, tests: 160 }
-];
-
-const AnalyticsChart = () => {
-  return (
-    <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Development & Testing Trends</h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data}>
-          <XAxis dataKey="name" stroke="#8884d8" />
-          <YAxis />
-          <Tooltip />
-          <Line type="monotone" dataKey="features" stroke="#8884d8" strokeWidth={2} />
-          <Line type="monotone" dataKey="tests" stroke="#82ca9d" strokeWidth={2} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
-
-export default AnalyticsChart;
-
-🕒 RecentActivities.js
-
-import { motion } from "framer-motion";
-
-const activities = [
-  { user: "Alice", action: "Created new Feature", time: "2 mins ago" },
-  { user: "Bob", action: "Updated Test Cases", time: "10 mins ago" },
-  { user: "Charlie", action: "Generated Automation Script", time: "30 mins ago" },
-];
-
-const RecentActivities = () => {
-  return (
-    <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md my-6">
-      <h2 className="text-xl font-semibold mb-4">Recent Activities</h2>
-      <div className="space-y-3">
-        {activities.map((activity, index) => (
-          <motion.div
-            key={index}
-            className="flex justify-between border-b pb-2"
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-          >
-            <p>{activity.user} - {activity.action}</p>
-            <span className="text-gray-500 text-sm">{activity.time}</span>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-export default RecentActivities;
-
-🌟 Final Touches
-	•	Tailwind for Styling
-	•	Framer Motion for Animations
-	•	Dark Mode Toggle
-	•	Lucide Icons for Clean UI
-	•	Recharts for Analytics
-
-💡 Now your DashboardPage.js is complete with a futuristic UI! 🚀
-Let me know if you need any refinements! 🎨🔥
-
-------------------
-WIREFRAME.JS
--------------------
-
-import { useState } from "react";
-import { Plus, Upload, Globe, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
-
-const WireframesPage = () => {
-  const [showOptions, setShowOptions] = useState(false);
-
-  return (
-    <div className="flex flex-col h-full p-4 relative">
-      <h1 className="text-2xl font-bold mb-4">Wireframes</h1>
-
-      {/* Content Placeholder */}
-      <div className="flex-1"></div>
-
-      {/* Search Bar with Embedded Icons */}
-      <div className="relative flex items-center w-full max-w-xl mx-auto mb-4">
-        <input
-          type="text"
-          placeholder="Search wireframes..."
-          className="w-full p-3 pr-12 pl-10 rounded-full shadow-md bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none"
-        />
-        {/* Submit Arrow */}
-        <ArrowRight className="absolute right-3 text-gray-500 dark:text-gray-400 cursor-pointer hover:text-blue-500" size={24} />
-        
-        {/* Plus Icon for Options */}
-        <div className="absolute left-3 cursor-pointer" onClick={() => setShowOptions(!showOptions)}>
-          <Plus className="text-gray-500 dark:text-gray-400 hover:text-blue-500" size={24} />
-        </div>
-      </div>
-
-      {/* Dropdown Options */}
-      {showOptions && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 10 }}
-          className="absolute bottom-16 left-10 bg-white dark:bg-gray-800 shadow-lg rounded-lg w-48 py-2"
-        >
-          <button className="flex items-center w-full px-4 py-2 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Upload className="mr-2" size={18} /> Upload File
-          </button>
-          <button className="flex items-center w-full px-4 py-2 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Globe className="mr-2" size={18} /> Search Web
-          </button>
-        </motion.div>
-      )}
-    </div>
-  );
-};
-
-export default WireframesPage;
-
-
-_________________________________
-DASHBOARD
-___________________________________
-
-import { useState } from "react";
-import { Home, Search, Plus } from "lucide-react";
-import { motion } from "framer-motion";
-import Sidebar from "../components/Sidebar";
-import DashboardCards from "../components/DashboardCards";
-import Chart from "../components/Chart";
-
-export default function DashboardPage() {
-  const [search, setSearch] = useState("");
-
-  return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-      <Sidebar />
-      <div className="flex flex-col flex-1 p-6">
-        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">Welcome Back, User 👋</h1>
-        
-        {/* Dashboard Cards */}
-        <DashboardCards />
-        
-        {/* Chart Section */}
-        <Chart />
-        
-        {/* Search Bar */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ duration: 0.3 }}
-          className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center bg-white dark:bg-gray-800 shadow-lg rounded-full px-4 py-2"
-        >
-          <input
-            type="text"
-            placeholder="Search..."
-            className="bg-transparent focus:outline-none text-gray-700 dark:text-white px-2"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <button className="text-gray-600 dark:text-gray-300 ml-2">
-            <Search size={20} />
-          </button>
-          <div className="relative ml-2">
-            <button className="text-purple-600">
-              <Plus size={24} />
-            </button>
-            <div className="absolute bottom-12 right-0 bg-white dark:bg-gray-800 shadow-md rounded-md p-2 hidden">
-              <button className="block w-full text-left p-2 hover:bg-gray-200 dark:hover:bg-gray-700">Upload File</button>
-              <button className="block w-full text-left p-2 hover:bg-gray-200 dark:hover:bg-gray-700">Search Web</button>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </div>
-  );
-}
---------
-SideBar
 ---------
+SIDEBAR
+----------
 
-import { useState } from "react";
-import { Home, Layout, List, FileText, Code, Database, ChevronLeft, ChevronRight, Moon, Sun } from "lucide-react";
-import { motion } from "framer-motion";
+import { NavLink } from "react-router-dom";
+import { Home, Grid, FileText, Database, ClipboardList, Code } from "lucide-react";
 
-const Sidebar = ({ darkMode, setDarkMode }) => {
-  const [isOpen, setIsOpen] = useState(true);
-
-  const toggleSidebar = () => setIsOpen(!isOpen);
-
-  const menuItems = [
-    { name: "Dashboard", icon: <Home size={20} />, path: "/dashboard" },
-    { name: "Wireframes", icon: <Layout size={20} />, path: "/wireframes" },
-    { name: "Epics", icon: <List size={20} />, path: "/epics" },
-    { name: "Features", icon: <FileText size={20} />, path: "/features" },
-    { name: "Test Scenarios", icon: <FileText size={20} />, path: "/test-scenarios" },
-    { name: "Test Cases", icon: <Code size={20} />, path: "/test-cases" },
-    { name: "Test Scripts", icon: <Code size={20} />, path: "/test-scripts" },
-    { name: "Test Data", icon: <Database size={20} />, path: "/test-data" },
-  ];
-
+const Sidebar = () => {
   return (
-    <motion.div
-      animate={{ width: isOpen ? "240px" : "80px" }}
-      className={`h-screen bg-gray-900 text-white flex flex-col p-4 transition-all duration-300 shadow-lg`}
-    >
-      <div className="flex items-center justify-between mb-6">
-        <motion.img
-          src="/profile.jpg"
-          alt="Profile"
-          className="rounded-full w-12 h-12 border-2 border-white"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        />
-        {isOpen && <span className="text-lg font-semibold">User</span>}
-        <button onClick={toggleSidebar} className="p-2 rounded-md hover:bg-gray-800">
-          {isOpen ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
-        </button>
-      </div>
+    <div className="h-screen w-64 bg-blue-900 text-white p-5 fixed">
+      <h1 className="text-2xl font-bold mb-6">Synthora</h1>
       <nav className="flex flex-col space-y-4">
-        {menuItems.map((item, index) => (
-          <a
-            key={index}
-            href={item.path}
-            className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800"
-          >
-            {item.icon}
-            {isOpen && <span>{item.name}</span>}
-          </a>
-        ))}
+        <NavItem to="/" icon={<Home />} label="Dashboard" />
+        <NavItem to="/wireframes" icon={<Grid />} label="Wireframes" />
+        <NavItem to="/epics" icon={<FileText />} label="Epics" />
+        <NavItem to="/features" icon={<Database />} label="Features" />
+        <NavItem to="/test-scenarios" icon={<ClipboardList />} label="Test Scenarios" />
+        <NavItem to="/test-cases" icon={<FileText />} label="Test Cases" />
+        <NavItem to="/test-scripts" icon={<Code />} label="Test Scripts" />
       </nav>
-      <div className="mt-auto">
-        <button
-          onClick={() => setDarkMode(!darkMode)}
-          className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-800 w-full"
-        >
-          {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-          {isOpen && <span>{darkMode ? "Light Mode" : "Dark Mode"}</span>}
-        </button>
-      </div>
-    </motion.div>
+    </div>
   );
 };
+
+const NavItem = ({ to, icon, label }) => (
+  <NavLink
+    to={to}
+    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition"
+  >
+    {icon}
+    <span>{label}</span>
+  </NavLink>
+);
 
 export default Sidebar;
-
-
------
-Additional COde for App.js
----------------------------
-
-import React, { useState } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Sidebar from "./components/Sidebar";
-import DashboardPage from "./pages/DashboardPage";
-import WireframesPage from "./pages/WireframesPage";
-import EpicsPage from "./pages/EpicsPage";
-import FeaturesPage from "./pages/FeaturesPage";
-import TestScenariosPage from "./pages/TestScenariosPage";
-import TestCasesPage from "./pages/TestCasesPage";
-import TestScriptsPage from "./pages/TestScriptsPage";
-import TestDataPage from "./pages/TestDataPage";
-
-function App() {
-  const [darkMode, setDarkMode] = useState(false);
-
-  return (
-    <Router>
-      <div className={darkMode ? "dark" : ""}>
-        <Sidebar darkMode={darkMode} setDarkMode={setDarkMode} />
-        <div className="content">
-          <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/wireframes" element={<WireframesPage />} />
-            <Route path="/epics" element={<EpicsPage />} />
-            <Route path="/features" element={<FeaturesPage />} />
-            <Route path="/test-scenarios" element={<TestScenariosPage />} />
-            <Route path="/test-cases" element={<TestCasesPage />} />
-            <Route path="/test-scripts" element={<TestScriptsPage />} />
-            <Route path="/test-data" element={<TestDataPage />} />
-          </Routes>
-        </div>
-      </div>
-    </Router>
-  );
-}
-
-export default App;
-
-
-----
-DashbaordCard
-------------
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-
-const DashboardCard = ({ title, count, icon: Icon, color }) => {
-  return (
-    <Card className="p-4 rounded-2xl shadow-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 w-full">
-      <CardContent className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">{title}</h3>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{count}</p>
-        </div>
-        <div
-          className={cn(
-            "p-3 rounded-full text-white",
-            color || "bg-blue-500"
-          )}
-        >
-          <Icon className="w-6 h-6" />
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-export default DashboardCard;
-
-
-import React from "react";
-
-const Card = ({ children, className }) => {
-  return (
-    <div className={`bg-white dark:bg-gray-800 shadow-md rounded-2xl p-4 ${className}`}>
-      {children}
-    </div>
-  );
-};
-
-const CardContent = ({ title, value, icon }) => {
-  return (
-    <div className="flex items-center justify-between">
-      <div>
-        <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">{title}</h3>
-        <p className="text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
-      </div>
-      <div className="text-3xl text-indigo-600 dark:text-indigo-400">{icon}</div>
-    </div>
-  );
-};
-
-export { Card, CardContent };
-
-
-
-
-
-
-
