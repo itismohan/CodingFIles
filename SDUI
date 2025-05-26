@@ -1,0 +1,480 @@
+// SDUI Test Framework Extended with Slack, S3, and Mobile Support
+
+// ✅ Existing support:
+// - Visual Regression Testing
+// - Schema Validation
+// - Bulk Test Generation
+// - CLI for Test Generation
+// - Auto Snapshot Cleanup
+// - SDUI Coverage Dashboard
+
+// 📁 .github/workflows/sdui-ci.yml (updated)
+name: 🧪 SDUI Test CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repo
+        uses: actions/checkout@v3
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🎭 Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: 🧬 Validate SDUI schema
+        run: node framework/cli/validate-sdui-schema.js
+
+      - name: 🧼 Clean old snapshots
+        run: node framework/utils/cleanupSnapshots.js
+
+      - name: 📱 Run tests on Desktop and Mobile
+        run: >
+          npx playwright test
+          --project=Desktop
+          --project=MobileAndroid
+          --project=MobileIOS
+
+      - name: 📊 Upload HTML Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: playwright-report
+
+      - name: ☁️ Upload Dashboard to S3
+        if: always()
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks
+        env:
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-1'
+          SOURCE_DIR: 'framework/dashboard'
+
+      - name: 📣 Slack Notification
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: '❌ SDUI CI failed on ${{ github.ref }} in ${{ github.repository }}'
+
+// 📁 playwright.config.ts (mobile emulation setup)
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  projects: [
+    {
+      name: 'Desktop',
+      use: { browserName: 'chromium' }
+    },
+    {
+      name: 'MobileAndroid',
+      use: { ...devices['Pixel 5'] }
+    },
+    {
+      name: 'MobileIOS',
+      use: { ...devices['iPhone 13'] }
+    }
+  ]
+});
+
+// ✅ To use:
+// - Set AWS & Slack secrets in GitHub repo settings
+// - `AWS_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `SLACK_WEBHOOK`
+
+// Your framework now has:
+// ✅ CI/CD with GitHub Actions
+// ✅ Mobile Emulation for Android & iOS
+// ✅ Slack Alerts on failure
+// ✅ S3 Upload for Dashboard Hosting
+
+
+📁 SDUI-Test-Framework
+
+├── .github
+│   └── workflows
+│       └── sdui-ci.yml                        # CI/CD pipeline with Slack + S3 + mobile support
+│
+├── framework
+│   ├── cli
+│   │   ├── generate-tests.js                  # CLI to bulk generate tests
+│   │   └── validate-sdui-schema.js           # CLI to validate schema
+│   │
+│   ├── config
+│   │   └── config.js                         # App, API base URLs and test creds
+│   │
+│   ├── dashboard
+│   │   ├── index.html                        # Coverage Dashboard
+│   │   └── coverage.json                     # Coverage stats
+│   │
+│   ├── schemas
+│   │   └── sdui-schema.json                  # Sample SDUI JSON schema
+│   │
+│   ├── utils
+│   │   ├── apiClient.js                      # API wrapper using supertest
+│   │   ├── cleanupSnapshots.js               # Cleanup stale screenshots
+│   │   ├── sduiParser.js                     # Converts SDUI JSON to locators
+│   │   ├── schemaValidator.js                # Uses AJV to validate schema
+│   │   └── testGenerator.js                  # Test generator from schema
+│
+├── playwright.config.ts                      # Includes desktop + mobile projects
+├── tests
+│   ├── generated
+│   │   └── generated.spec.ts                 # Auto-generated tests from schema
+│   └── web
+│       └── login.spec.ts                     # Example test (uses SDUI locators)
+│
+├── package.json
+└── README.md
+
+// 📌 Add Playwright device emulation in playwright.config.ts
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  projects: [
+    { name: 'Desktop', use: { browserName: 'chromium' } },
+    { name: 'MobileAndroid', use: { ...devices['Pixel 5'] } },
+    { name: 'MobileIOS', use: { ...devices['iPhone 13'] } }
+  ]
+});
+
+// 📌 Slack, S3 and CI pipeline in .github/workflows/sdui-ci.yml
+// (see previous message for full content)
+
+// ✅ Your framework now supports:
+// - Schema validation
+// - Visual regression
+// - Mobile emulation
+// - Dashboard publishing to S3
+// - Slack CI alerts
+// - CLI & test auto-gen tools
+
+
+
+// framework/cli/generate-tests.js
+
+const fs = require('fs');
+const path = require('path');
+const { generateTestsFromSchema } = require('../utils/testGenerator');
+
+const schemaPath = process.argv[2];
+if (!schemaPath) {
+  console.error('❌ Please provide a path to the SDUI schema JSON.');
+  process.exit(1);
+}
+
+const schemaFullPath = path.resolve(schemaPath);
+if (!fs.existsSync(schemaFullPath)) {
+  console.error(`❌ Schema file not found at ${schemaFullPath}`);
+  process.exit(1);
+}
+
+const schema = JSON.parse(fs.readFileSync(schemaFullPath, 'utf-8'));
+const outputDir = path.resolve(__dirname, '../../tests/generated');
+
+if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+
+const testCode = generateTestsFromSchema(schema);
+const outputPath = path.join(outputDir, 'generated.spec.ts');
+
+fs.writeFileSync(outputPath, testCode);
+console.log(`✅ Tests generated at ${outputPath}`);
+
+
+
+// framework/cli/validate-sdui-schema.js
+
+const Ajv = require('ajv').default;
+const fs = require('fs');
+const path = require('path');
+
+const schemaPath = path.resolve(__dirname, '../schemas/sdui-schema.json');
+const dataPath = path.resolve(__dirname, '../../data/sample-sdui.json');
+
+const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
+const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+
+const ajv = new Ajv({ allErrors: true, strict: false });
+const validate = ajv.compile(schema);
+const valid = validate(data);
+
+if (!valid) {
+  console.error('❌ SDUI Schema validation failed with errors:');
+  console.error(validate.errors);
+  process.exit(1);
+} else {
+  console.log('✅ SDUI Schema is valid.');
+}
+
+
+
+const Ajv = require('ajv').default;
+
+class SchemaValidator {
+  constructor(schema) {
+    this.ajv = new Ajv({ allErrors: true, strict: false });
+    this.validate = this.ajv.compile(schema);
+  }
+
+  validateData(data) {
+    const valid = this.validate(data);
+    if (!valid) {
+      return { valid: false, errors: this.validate.errors };
+    }
+    return { valid: true, errors: null };
+  }
+}
+
+module.exports = SchemaValidator;
+
+
+/**
+ * Generates Playwright test code from an SDUI JSON schema
+ * @param {Object} schema - The SDUI JSON schema object
+ * @returns {string} - Playwright test code as a string
+ */
+function generateTestsFromSchema(schema) {
+  // Basic header & imports
+  let code = `import { test, expect } from '@playwright/test';\n\n`;
+
+  // Generate one test per screen/component in the schema
+  if (!schema.screens || schema.screens.length === 0) {
+    return code + `test('No screens defined in SDUI schema', () => { });\n`;
+  }
+
+  schema.screens.forEach(screen => {
+    const screenName = screen.name || 'UnnamedScreen';
+    code += `test.describe('${screenName}', () => {\n`;
+
+    code += `  test('should render correctly', async ({ page }) => {\n`;
+    code += `    await page.goto('/'); // TODO: update URL to actual app\n\n`;
+
+    // Basic check for existence of components
+    if (screen.components && screen.components.length > 0) {
+      screen.components.forEach(component => {
+        if (component.id) {
+          code += `    await expect(page.locator('#${component.id}')).toBeVisible();\n`;
+        }
+        if (component.text) {
+          // If component has static text, check it exists
+          code += `    await expect(page.locator('#${component.id}')).toHaveText('${component.text}');\n`;
+        }
+      });
+    }
+
+    code += `  });\n`;
+    code += `});\n\n`;
+  });
+
+  return code;
+}
+
+module.exports = { generateTestsFromSchema };
+
+
+const fs = require('fs');
+const path = require('path');
+
+/**
+ * Deletes snapshot files older than a specified number of days
+ * @param {string} snapshotsDir - Directory containing snapshots/screenshots
+ * @param {number} maxAgeDays - Max age in days before a file is deleted
+ */
+function cleanupSnapshots(snapshotsDir, maxAgeDays = 30) {
+  if (!fs.existsSync(snapshotsDir)) {
+    console.warn(`⚠️ Directory does not exist: ${snapshotsDir}`);
+    return;
+  }
+
+  const now = Date.now();
+  const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000;
+
+  fs.readdirSync(snapshotsDir).forEach(file => {
+    const filePath = path.join(snapshotsDir, file);
+    const stats = fs.statSync(filePath);
+
+    // Only delete files, not folders
+    if (stats.isFile()) {
+      const age = now - stats.mtimeMs;
+      if (age > maxAgeMs) {
+        fs.unlinkSync(filePath);
+        console.log(`🗑️ Deleted old snapshot: ${filePath}`);
+      }
+    }
+  });
+}
+
+module.exports = { cleanupSnapshots };
+
+
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
+  retries: 1,                       // Retry once on CI failure
+  reporter: [
+    ['list'],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['json', { outputFile: 'playwright-report/report.json' }]
+  ],
+  use: {
+    headless: true,
+    screenshot: 'only-on-failure',
+    trace: 'retain-on-failure',
+    video: 'retain-on-failure',
+    actionTimeout: 10000,
+    navigationTimeout: 20000,
+  },
+  projects: [
+    {
+      name: 'Desktop Chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'Mobile Android',
+      use: { ...devices['Pixel 5'] },
+    },
+    {
+      name: 'Mobile iOS',
+      use: { ...devices['iPhone 13'] },
+    },
+  ],
+  // Optional: Visual regression test config could be added here if using 3rd party libs
+});
+
+
+// framework/utils/sduiParser.js
+
+//**
+ * Parse SDUI layout and extract relevant screen/component structure
+ * @param {Object} layout - Full SDUI layout JSON
+ * @returns {Array} Parsed array of components with ID, type, text, and screen
+ */
+function parseSDUIComponents(layout) {
+  const results = [];
+
+  if (!layout || !Array.isArray(layout.screens)) {
+    throw new Error('Invalid SDUI format: expected "screens" array');
+  }
+
+  layout.screens.forEach(screen => {
+    const screenName = screen.name || 'UnnamedScreen';
+    (screen.components || []).forEach(component => {
+      if (component.id) {
+        results.push({
+          id: component.id,
+          type: component.type || 'unknown',
+          text: component.text || '',
+          screen: screenName,
+        });
+      }
+    });
+  });
+
+  return results;
+}
+
+module.exports = { parseSDUIComponents };
+
+API CLIENT
+----------------
+const axios = require('axios');
+
+class ApiClient {
+  constructor(baseUrl, headers = {}) {
+    this.client = axios.create({
+      baseURL: baseUrl,
+      headers: { 'Content-Type': 'application/json', ...headers },
+      timeout: 10000,
+    });
+  }
+
+  /**
+   * Fetch SDUI layout from a GET endpoint
+   * @param {string} endpoint - API path to SDUI layout (e.g., '/layout/home')
+   * @returns {Promise<Object>} JSON response
+   */
+  async fetchSDUILayout(endpoint) {
+    try {
+      const response = await this.client.get(endpoint);
+      return response.data;
+    } catch (error) {
+      console.error(`❌ Error fetching SDUI layout: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Generic POST utility
+   * @param {string} endpoint
+   * @param {object} data
+   * @returns {Promise<Object>} response
+   */
+  async postData(endpoint, data) {
+    try {
+      const response = await this.client.post(endpoint, data);
+      return response.data;
+    } catch (error) {
+      console.error(`❌ Error in POST request: ${error.message}`);
+      throw error;
+    }
+  }
+}
+
+module.exports = ApiClient;
+
+
+
+const path = require('path');
+
+module.exports = {
+  sduiApi: {
+    baseUrl: 'https://api.example.com',
+    layoutEndpoint: '/sdui/layout',
+  },
+
+  paths: {
+    snapshotsDir: path.join(__dirname, '../../artifacts/snapshots'),
+    testOutputDir: path.join(__dirname, '../../artifacts/results'),
+    schemaDir: path.join(__dirname, '../../schemas'),
+    coverageFile: path.join(__dirname, '../../artifacts/coverage/coverage.json'),
+    dashboardAssets: path.join(__dirname, '../../dashboard'),
+  },
+
+  cleanup: {
+    maxSnapshotAgeDays: 30,
+  },
+
+  mobile: {
+    devices: ['Pixel 5', 'iPhone 13'],
+  },
+
+  dashboard: {
+    port: 3001,
+    title: 'SDUI Test Coverage Dashboard',
+  },
+
+  notifications: {
+    slackWebhookUrl: process.env.SLACK_WEBHOOK_URL || '',
+  }
+};
+
+
