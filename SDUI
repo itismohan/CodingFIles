@@ -477,4 +477,216 @@ module.exports = {
   }
 };
 
+-------------------------------
+ cli/generateCoverage.js
+-----------------------------
+#!/usr/bin/env node
 
+const fs = require('fs');
+const path = require('path');
+const { parseSDUIComponents } = require('../framework/utils/sduiParser');
+const ApiClient = require('../framework/utils/apiClient');
+const config = require('../framework/config/config');
+
+// Simulated test result store (this should ideally come from your test runner output)
+const loadTestedComponentIds = () => {
+  const resultPath = path.join(config.paths.testOutputDir, 'tested-components.json');
+  if (fs.existsSync(resultPath)) {
+    return new Set(JSON.parse(fs.readFileSync(resultPath, 'utf-8')));
+  }
+  return new Set(); // No tests run yet
+};
+
+const generateCoverageReport = async () => {
+  console.log('📊 Generating SDUI coverage report...');
+
+  const apiClient = new ApiClient(config.sduiApi.baseUrl);
+  const testedComponentIds = loadTestedComponentIds();
+
+  try {
+    const layout = await apiClient.fetchSDUILayout(config.sduiApi.layoutEndpoint);
+    const parsedComponents = parseSDUIComponents(layout);
+
+    const screenMap = {};
+
+    parsedComponents.forEach(comp => {
+      if (!screenMap[comp.screen]) {
+        screenMap[comp.screen] = [];
+      }
+      screenMap[comp.screen].push({
+        id: comp.id,
+        type: comp.type,
+        tested: testedComponentIds.has(comp.id),
+      });
+    });
+
+    const coverage = Object.entries(screenMap).map(([screenName, components]) => ({
+      name: screenName,
+      components
+    }));
+
+    fs.mkdirSync(path.dirname(config.paths.coverageFile), { recursive: true });
+    fs.writeFileSync(config.paths.coverageFile, JSON.stringify(coverage, null, 2));
+
+    console.log(`✅ Coverage report generated at ${config.paths.coverageFile}`);
+  } catch (err) {
+    console.error('❌ Failed to generate coverage report:', err.message);
+    process.exit(1);
+  }
+};
+
+generateCoverageReport();
+
+
+
+-----------------------------------
+ framework/reporters/postTestReporter.js
+------------------------------------------
+
+const fs = require('fs');
+const path = require('path');
+const config = require('../config/config');
+
+class PostTestReporter {
+  constructor() {
+    this.testedComponentIds = new Set();
+  }
+
+  /**
+   * Called on every completed test case
+   */
+  onTestEnd(test, result) {
+    // Look for annotation or title pattern to extract componentId
+    const match = test.title.match(/@componentId\((.*?)\)/);
+    if (match) {
+      this.testedComponentIds.add(match[1]);
+    }
+
+    // Optional: log test result summary
+    console.log(`🧪 ${test.title} - ${result.status}`);
+  }
+
+  /**
+   * Called after all tests
+   */
+  async onEnd() {
+    const outDir = config.paths.testOutputDir;
+    const outFile = path.join(outDir, 'tested-components.json');
+
+    fs.mkdirSync(outDir, { recursive: true });
+    fs.writeFileSync(outFile, JSON.stringify([...this.testedComponentIds], null, 2));
+    console.log(`✅ Extracted ${this.testedComponentIds.size} tested components to ${outFile}`);
+  }
+}
+
+module.exports = PostTestReporter;
+
+----------------------------------
+playwright.config.js:
+----------------------------------
+
+const PostTestReporter = require('./framework/reporters/postTestReporter');
+
+module.exports = {
+  reporter: [
+    ['list'], // optional
+    ['./framework/reporters/postTestReporter.js']
+  ],
+  // other config...
+};
+
+
+------------------------------
+workflow.yml
+-----------------
+
+name: SDUI Tests & Coverage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  sdui-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: ⬇️ Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: 📦 Install Dependencies
+        run: npm install
+
+      - name: 🧪 Run Playwright Tests
+        run: npx playwright test
+
+      - name: 🧬 Generate SDUI Coverage Report
+        run: node cli/generateCoverage.js
+
+      - name: 🗂️ Upload Dashboard to S3 (optional)
+        if: success() && env.AWS_ACCESS_KEY_ID != ''
+        run: |
+          aws s3 sync dashboard/ s3://your-s3-bucket/dashboard/ --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: your-region
+
+      - name: 📣 Send Slack Notification (optional)
+        if: success() && env.SLACK_WEBHOOK_URL != ''
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"✅ SDUI Test & Coverage Report Complete. View: https://your-bucket.s3.amazonaws.com/dashboard/index.html"}' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+
+config.ts
+----------
+const { devices } = require('@playwright/test');
+
+module.exports = {
+  projects: [
+    {
+      name: 'Desktop Chrome',
+      use: { browserName: 'chromium' }
+    },
+    {
+      name: 'iPhone 13',
+      use: { ...devices['iPhone 13'] }
+    },
+    {
+      name: 'Pixel 5',
+      use: { ...devices['Pixel 5'] }
+    }
+  ]
+};
+---------------------------------------
+ framework/schemas/sdui.schema.json
+--------------------------------------
+{
+  "type": "object",
+  "properties": {
+    "screen": { "type": "string" },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string" },
+          "props": { "type": "object" }
+        },
+        "required": ["id", "type"]
+      }
+    }
+  },
+  "required": ["screen", "components"]
+}
